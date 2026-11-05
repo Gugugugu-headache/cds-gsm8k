@@ -1,0 +1,8 @@
+# Candidate environment; GPU integration must be validated on the lab server.
+# Install a CUDA-compatible torch build first, then freeze the successful environment.
+transformers>=4.46,<5
+peft>=0.13,<1
+accelerate>=1,<2
+deepspeed>=0.15,<1
+Jinja2>=3.1,<4
+tqdm

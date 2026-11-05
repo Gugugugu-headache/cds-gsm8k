@@ -1,0 +1,22 @@
+{
+  "date": "2026-11-05",
+  "protocol": "pre300_no_fixed_dev",
+  "selection_seed": 42,
+  "counts": {
+    "diag": 3500,
+    "test": 1319,
+    "warmup": 300,
+    "dev": 0,
+    "reserve": 3673
+  },
+  "offline_tests_passed": 16,
+  "package_migration": "passed with original server bundle and existing frozen 292 run",
+  "downloaded_revision_preserved": true,
+  "old_run_unchanged": true,
+  "old_292_subset_of_300": true,
+  "prepare_repeat_identical": true,
+  "bundle_sha256": "d32b00f5fdac933617b5f77c293c1cd907ccaeff9e233358d01738b07f4bcd5a",
+  "gpu_training_executed": false,
+  "teacher_api_called": false,
+  "remote_executed": false
+}

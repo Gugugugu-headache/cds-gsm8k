@@ -1,0 +1,146 @@
+{
+  "date": "2026-11-05",
+  "python": "3.13.5",
+  "student": "Qwen/Qwen2.5-3B-Instruct",
+  "teacher": "Qwen/Qwen2.5-72B-Instruct",
+  "offline_tests": {
+    "passed": 10,
+    "failed": 0
+  },
+  "syntax_compile": "passed",
+  "original_split_validation": {
+    "status": "passed",
+    "checks": [
+      {
+        "check": "vocabulary and thresholds independently recomputed",
+        "passed": true
+      },
+      {
+        "check": "exact sizes",
+        "passed": true
+      },
+      {
+        "check": "D_diag ID file",
+        "passed": true
+      },
+      {
+        "check": "D_diag original order",
+        "passed": true
+      },
+      {
+        "check": "D_remaining ID file",
+        "passed": true
+      },
+      {
+        "check": "D_remaining original order",
+        "passed": true
+      },
+      {
+        "check": "D_test ID file",
+        "passed": true
+      },
+      {
+        "check": "D_test original order",
+        "passed": true
+      },
+      {
+        "check": "all question/answer/hash fields match official sources",
+        "passed": true
+      },
+      {
+        "check": "all source identities match",
+        "passed": true
+      },
+      {
+        "check": "all original/main/other labels and statuses match raw CDS",
+        "passed": true
+      },
+      {
+        "check": "all label provenance matches raw CDS",
+        "passed": true
+      },
+      {
+        "check": "official train exact disjoint partition",
+        "passed": true
+      },
+      {
+        "check": "official test unchanged membership and order",
+        "passed": true
+      },
+      {
+        "check": "every question involving an 11-to-199-count KC is in D_diag",
+        "passed": true
+      },
+      {
+        "check": "required-item flags",
+        "passed": true
+      },
+      {
+        "check": "diagnosis has usable main KC evidence",
+        "passed": true
+      },
+      {
+        "check": "no normalized question crosses sets",
+        "passed": true
+      },
+      {
+        "check": "q_matrix.csv exact entries, row order, dimensions",
+        "passed": true
+      },
+      {
+        "check": "q_matrix_source28.csv exact entries, row order, dimensions",
+        "passed": true
+      },
+      {
+        "check": "source hashes unchanged",
+        "passed": true
+      },
+      {
+        "check": "existing artifact hashes match",
+        "passed": true
+      },
+      {
+        "check": "selection script hash",
+        "passed": true
+      },
+      {
+        "check": "configuration hash",
+        "passed": true
+      },
+      {
+        "check": "reported KC counts independently recomputed",
+        "passed": true
+      }
+    ],
+    "errors": [],
+    "repeat_run": {
+      "performed": false,
+      "matching": null
+    },
+    "main_kc_count": 18,
+    "required_item_union": 317,
+    "limitations": [
+      "Source tag correctness is not independently established.",
+      "18 main Q dimensions omit background/rare labels explicitly retained in each record.",
+      "Protected KCs have zero remaining-train coverage by user request.",
+      "No fuzzy/semantic near-duplicate screening was performed."
+    ]
+  },
+  "prepare_counts": {
+    "diag": 3500,
+    "test": 1319,
+    "warmup": 292,
+    "dev": 500,
+    "reserve": 3181
+  },
+  "prepare_second_run": "passed; identical artifacts accepted",
+  "real_teacher_requests": 0,
+  "gpu_inference_executed": false,
+  "gpu_training_executed": false,
+  "limitations": [
+    "GPU dependencies and model weights absent locally",
+    "API model availability not tested",
+    "No experimental accuracy or improvement result",
+    "No semantic near-duplicate validation"
+  ]
+}

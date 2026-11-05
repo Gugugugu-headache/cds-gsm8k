@@ -1,0 +1,14 @@
+{
+  "date": "2026-11-05",
+  "package_sha256": "f94d488d31a88295407f5acf94c4b8b03b09290702f5c72c43d817678edde0bd",
+  "offline_tests_passed": 21,
+  "deployment_migration": "passed",
+  "data_byte_identical_to_pre300": true,
+  "hf_revision_preserved": true,
+  "old_frozen_run_unchanged": true,
+  "optimizer_backend": "torch.optim.AdamW via DeepSpeed torch_adam=true",
+  "dependencies_gpu_validated": false,
+  "gpu_training_executed": false,
+  "remote_executed": false,
+  "teacher_api_called": false
+}

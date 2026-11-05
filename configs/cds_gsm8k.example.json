@@ -1,0 +1,49 @@
+{
+  "seed": 42,
+  "data_root": "DP-CDI/data",
+  "run_dir": "runs/cds_qwen25_3b_pre300_torchadam_tok1024",
+  "student_model": "/absolute/path/to/Qwen2.5-3B-Instruct",
+  "student_revision_note": "Record the downloaded Hugging Face commit before running.",
+  "teacher": {
+    "model": "Qwen/Qwen2.5-72B-Instruct",
+    "base_url_env": "Siliconflow_BASE_URL",
+    "api_key_env": "Siliconflow_API_KEY",
+    "base_url_default": "https://api.siliconflow.cn/v1",
+    "timeout_seconds": 180,
+    "retries": 3
+  },
+  "kc_scope": "source_kcs",
+  "weak_accuracy_threshold": 0.5,
+  "weak_frequency_threshold": 0.05,
+  "weak_threshold_note": "Explicit adaptation choices, not recovered author hyperparameters; freeze before evaluation.",
+  "zero_support_policy": "source_zero",
+  "pre_finetune_size": 300,
+  "development_size": 0,
+  "global_samples_per_kc": 5,
+  "fine_samples_per_error": 3,
+  "augmentation_request_ratio": 0.5,
+  "augmentation_samples_per_request": 3,
+  "quality_min_score": 10,
+  "score_accuracy_weight": 0.85,
+  "score_smoothing": 0.01,
+  "score_sigma": 1.0,
+  "inference_max_tokens": 1024,
+  "inference_prompt": "chat",
+  "training": {
+    "epochs": 1,
+    "max_length": 2048,
+    "global_batch_size": 32,
+    "micro_batch_size": 2,
+    "lora_rank": 8,
+    "lora_alpha": 16,
+    "lora_dropout": 0.05,
+    "target_modules": [
+      "q_proj",
+      "v_proj"
+    ],
+    "learning_rate": 3e-05,
+    "warmup_min_lr": 0.0001,
+    "warmup_max_lr": 0.0003,
+    "warmup_num_steps": 300
+  }
+}

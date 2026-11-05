@@ -1,0 +1,23 @@
+# Candidate training environment for the reported Python 3.11 / Torch 2.6 cu124 host.
+# Install CUDA torch separately first. Freeze all resolved versions after GPU validation.
+torch==2.6.0
+numpy==1.26.4
+transformers==4.51.3
+peft==0.15.2
+accelerate==1.6.0
+huggingface-hub>=0.30,<1
+tokenizers>=0.21.1,<0.22
+safetensors>=0.4.3,<1
+Jinja2>=3.1,<4
+tqdm
+packaging
+setuptools<81
+wheel
+ninja
+hjson
+msgpack
+psutil
+py-cpuinfo
+pydantic>=2,<3
+einops
+# DeepSpeed is installed separately with DS_BUILD_OPS=0 and --no-build-isolation.

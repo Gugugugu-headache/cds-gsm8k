@@ -1,0 +1,29 @@
+{
+  "validation": "CPU only; no model inference, download, training or teacher API calls",
+  "tests_passed": 25,
+  "inference_max_tokens": 1024,
+  "run_dir": "runs/cds_qwen25_3b_pre300_torchadam_tok1024",
+  "data_files_byte_identical_to_previous_pre300": [
+    "dev.json",
+    "diag.json",
+    "manifest.json",
+    "reserve.json",
+    "test.json",
+    "vocab.json",
+    "warmup.json"
+  ],
+  "counts": {
+    "diag": 3500,
+    "test": 1319,
+    "warmup": 300,
+    "dev": 0,
+    "reserve": 3673
+  },
+  "server_live_config_included_in_patch": false,
+  "frozen_pipeline_or_training_code_included_in_patch": false,
+  "deployed_src_layout_migration_and_prepare": "passed",
+  "simulated_server_model_revision_preserved": true,
+  "previous_frozen_config_data_and_eval_bytes_preserved": true,
+  "old_evaluation_not_copied_to_new_run": true,
+  "patch_sha256": "206732bdf97fbd541f52a0974e709f28ee1f058d6aba386b7f09772a746af6cf"
+}

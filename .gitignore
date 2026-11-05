@@ -1,0 +1,26 @@
+runs/
+__pycache__/
+tests/__pycache__/
+.venv*/
+dist/
+
+# Credentials and machine-local configuration stay outside version control.
+.env
+.env.*
+*.pem
+*.key
+/configs/cds_gsm8k.json
+/configs/*.before_*.json
+/configs/*.local.json
+
+# Model weights, training outputs and local caches.
+model_list/
+checkpoints/
+venvs/
+.hf_cache/
+.cache/
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.log
