@@ -6,7 +6,7 @@ Git仓库根目录是本地 `CDI（CDS复现）`，部署到已有服务器项�
 
 ## 配置规则
 
-版本控制只包含无密钥的 `configs/cds_gsm8k.example.json`。实际 `configs/cds_gsm8k.json` 和迁移备份被忽略，保留各机器的模型路径、实际HF commit与run设置。后续pull更新模板，不会自动替换实际配置；实验参数变更通过迁移脚本或另建配置与run进行。
+版本控制只包含无密钥的 `configs/*.example.json` 模板。实际 `configs/*.json`（包括新增Qwen2-7B候选配置）和迁移备份被忽略，保留各机器的模型路径、实际HF commit与run设置。后续pull更新模板，不会自动替换实际配置；实验参数变更通过迁移脚本或另建配置与run进行。
 
 模型权重、checkpoint、缓存、runs、dist和.env类文件被忽略。GitHub只用于代码与说明版本同步。公开仓库不包含原CDS源码或数据副本。
 

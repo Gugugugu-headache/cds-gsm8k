@@ -9,7 +9,8 @@ dist/
 .env.*
 *.pem
 *.key
-/configs/cds_gsm8k.json
+/configs/*.json
+!/configs/*.example.json
 /configs/*.before_*.json
 /configs/*.local.json
 

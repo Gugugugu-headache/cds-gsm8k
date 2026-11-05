@@ -8,11 +8,14 @@
 
 ## 当前协议
 
+**当前目标候选：Qwen/Qwen2-7B-Instruct。** 独立配置、下载与诊断题检查步骤见 [Qwen2-7B候选部署.md](Qwen2-7B候选部署.md)。已有3B默认配置与结果保留；候选所有命令显式使用 `--config src/configs/cds_gsm8k_qwen2_7b.json`。下方默认配置命令仍是已有3B流程参考，不会自动切换候选。
+
 用户已在完整Raw test前确认学生解题上限改为1024新token。服务器使用 [1024token评测协议.md](1024token评测协议.md) 的增量更新，仅修改预算与run_dir，保留512历史run及模型commit。参考模型直接采集响应；少数目标模型的CDS与主方法才共用各自的300题M0。
 
 | 项目 | 配置 |
 |---|---|
-| 目标模型 | Qwen/Qwen2.5-3B-Instruct（根据用户提出的 3B 方案，默认采用指令版） |
+| 新增提升目标候选 | Qwen/Qwen2-7B-Instruct（独立配置和run，先检查诊断题） |
+| 已完成Raw基线的模型 | Qwen/Qwen2.5-3B-Instruct（原默认配置与85.44%兼容评分保留） |
 | 教师 | 在线 Qwen/Qwen2.5-72B-Instruct，需确认账户可用的精确 model ID |
 | 诊断 | 原 D_diag，3500 题，仅官方 train |
 | 最终测试 | 原 D_test，1319 题，官方 test |

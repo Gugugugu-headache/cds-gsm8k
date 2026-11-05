@@ -1,0 +1,18 @@
+{
+  "tests_passed": 34,
+  "validation": "CPU/offline only; download API mocked in tests",
+  "candidate_repo_id": "Qwen/Qwen2-7B-Instruct",
+  "candidate_run_dir": "runs/cds_qwen2_7b_pre300_torchadam_tok1024",
+  "data_files_byte_identical_to_3b_protocol": [
+    "dev.json",
+    "diag.json",
+    "manifest.json",
+    "reserve.json",
+    "test.json",
+    "vocab.json",
+    "warmup.json"
+  ],
+  "frozen_pipeline_and_training_code_unchanged": true,
+  "actual_server_model_downloaded": false,
+  "actual_server_inference_or_training_run": false
+}
