@@ -4,7 +4,8 @@
 Defaults to the project-root .env. Never prints its values or sources it as shell
 code. Existing nominal payloads/cache keys stay the same; synthesis adds a
 recorded 1024->2048->4096 diagnosis retry and 4096->8192 generation retry.
-`inspect` is offline; `check` only queries models. Generation stages are explicit.
+`inspect` and `parse-cache` are offline; `check` only queries models. Generation
+stages are explicit.
 """
 import argparse
 from contextlib import contextmanager, nullcontext
@@ -126,26 +127,49 @@ def inspect_request(key):
         'usage': cached.get('usage')}, ensure_ascii=False, indent=2))
 
 
+def parse_cache(key, count):
+    import raw_cds18
+    import cds_pipeline as cp
+    from teacher_sample_format import validate_cached_text, parse_compatible
+    if not re.fullmatch(r'[0-9a-f]{64}', key or ''):
+        raise ValueError('--request-key must be a 64-character cache hash.')
+    cfg = cp.read(raw_cds18.CONFIG_PATH)
+    run = cp.resolve(cfg['run_dir'])
+    cached = cp.read(run / 'teacher_cache' / (key + '.json'))
+    validate_cached_text(run, key, cached['content'])
+    rows, mode = parse_compatible(cached['content'], count, [], {'request': key}, cp.parse_samples)
+    print(json.dumps({'request': key, 'parsed_count': len(rows), 'parser': mode,
+                      'preview_only': True, 'questions': [r['input'] for r in rows]},
+                     ensure_ascii=False, indent=2))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--env-file', type=Path,
                         default=Path(__file__).resolve().parents[1] / '.env')
-    parser.add_argument('command', choices=['inspect', 'check', 'synthesize', 'quality', 'augment'])
+    parser.add_argument('command', choices=['inspect', 'parse-cache', 'check', 'synthesize', 'quality', 'augment'])
     parser.add_argument('--pool', choices=['seed', 'augmented'])
     parser.add_argument('--request-key')
+    parser.add_argument('--count', type=int)
     args = parser.parse_args()
     if (args.command == 'quality') != (args.pool is not None):
         parser.error('--pool is required for quality and only accepted for quality.')
-    if (args.command == 'inspect') != (args.request_key is not None):
-        parser.error('--request-key is required for inspect and only accepted for inspect.')
+    if (args.command in ['inspect', 'parse-cache']) != (args.request_key is not None):
+        parser.error('--request-key is required for inspect/parse-cache and only accepted there.')
+    if (args.command == 'parse-cache') != (args.count is not None) or (args.count is not None and args.count <= 0):
+        parser.error('--count must be positive and is required only for parse-cache.')
     if args.command == 'inspect':
         inspect_request(args.request_key)
+        return
+    if args.command == 'parse-cache':
+        parse_cache(args.request_key, args.count)
         return
     import raw_cds18
     import cds_pipeline as cp
     from teacher_length_retry import diagnosis_length_retry, POLICY_VERSION
     from teacher_generation_retry import (generation_length_retry, LARGE_OUTPUT_TIMEOUT,
                                            POLICY_VERSION as GENERATION_POLICY)
+    from teacher_sample_format import sample_format_compatibility, POLICY_VERSION as PARSER_POLICY
     cfg = cp.read(raw_cds18.CONFIG_PATH)
     teacher = cfg['teacher']
     key, base = load_teacher_env(args.env_file, teacher)
@@ -163,6 +187,7 @@ def main():
              'config_hash': cp.digest(cfg), 'teacher': teacher['model'], 'base_url': base,
              'diagnosis_retry_policy': POLICY_VERSION if args.command == 'synthesize' else None,
              'generation_retry_policy': GENERATION_POLICY if args.command in ['synthesize', 'augment'] else None,
+             'sample_parser_policy': PARSER_POLICY if args.command in ['synthesize', 'augment'] else None,
              'curl_timeout_seconds_at_8192': LARGE_OUTPUT_TIMEOUT}
     with (run / 'teacher_transport.jsonl').open('a', encoding='utf-8') as file:
         file.write(json.dumps(event) + '\n')
@@ -174,7 +199,9 @@ def main():
                       if args.command in ['synthesize', 'augment'] else nullcontext())
         # Diagnosis captures the original call before the generation wrapper is
         # installed, so its internal 4096 attempt cannot escalate to 8192.
-        with curl_transport(key), retry, generation:
+        formatting = (sample_format_compatibility(cfg, run)
+                      if args.command in ['synthesize', 'augment'] else nullcontext())
+        with curl_transport(key), retry, generation, formatting:
             raw_cds18.main()
     finally:
         sys.argv = previous

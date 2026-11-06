@@ -1,0 +1,30 @@
+{
+  "date": "2026-11-06",
+  "unittest": {
+    "passed": 86,
+    "failed": 0
+  },
+  "scope": "CPU tests with representative observed Markdown heading style and temporary fake caches; no local real .env or paid API calls.",
+  "failure_source_cache_reported_by_user": "479b9d74a9fd5633d3bba5b657b1c46dd26a461a88e9c28bb57307579b7939aa",
+  "checks": [
+    "Observed numbered Markdown style yields three questions with unchanged mathematical answers and provenance-derived IDs",
+    "Original accepted formats return original results unchanged",
+    "Missing/duplicate numbers, partial/empty/unclosed answers and unsupported structures rejected",
+    "Headings inside answer bodies not treated as new questions; CRLF preserved",
+    "Cache content, stop reason and request hash validated; raw cache bytes unchanged",
+    "Per-use audit supports same cached augmentation response in different draws",
+    "Parse failure includes request hash and stage",
+    "Offline parse-cache preview reads no .env, makes no API calls, and writes no artifacts",
+    "Frozen scripts and existing retry policy helpers byte-identical; whitespace/credential-pattern checks passed"
+  ],
+  "unchanged_scripts_sha256": {
+    "cds_pipeline.py": "c9b1925f9b64d790d63b3463c6d4ffbbe8cd4d43c7ca20d5e7856343a6c731c7",
+    "train_lora.py": "ed5e11c2e97ef3b8d550c65b04cd73bf790d895bc95dd1ea9fd937ef87302682",
+    "initialization_pilot.py": "2ad180e48cc7489510979a266736e40a17b3beda349eb916b25ce53775f8120d",
+    "raw_cds.py": "16e095c18e138a4360f5be51d90a128293fb53fd22b2eb6565140b4dda429585",
+    "raw_cds18.py": "ac5bda038ffae38f198ab0b78806f1f5f1e67bddeb832d3ea289877d00826dbc",
+    "teacher_length_retry.py": "320d8a9ff80b96a16d1a9bc390947504d0ddaff72d8f4414fff091c5d5ab65b1",
+    "teacher_generation_retry.py": "145ae9c2406b768217c975f496b56d5a19dac177602587bd0c838d2b2c195e46"
+  },
+  "pending": "Run parse-cache --count 3 on the actual server cache, then resume teacher_env.py synthesize."
+}
