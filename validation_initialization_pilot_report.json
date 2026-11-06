@@ -1,0 +1,40 @@
+{
+  "date": "2026-11-06",
+  "scope": "Local CPU checks only; GPU training and inference remain to run on the lab server.",
+  "unittest": {
+    "passed": 45,
+    "failed": 0
+  },
+  "real_data_export_check": {
+    "warmup_diag_test": "Byte-identical to the prior allocation in temporary test runs.",
+    "dev": "Exactly the first 500 entries of the prior reserve in its fixed shuffled order.",
+    "counts": {
+      "diag": 3500,
+      "test": 1319,
+      "warmup": 300,
+      "dev": 500,
+      "reserve": 3173
+    },
+    "old_artifacts": "Unchanged, including original configuration and test artifact fixture."
+  },
+  "checks": [
+    "Configuration, data and checkpoint tampering rejected",
+    "Partial/test evaluation rejected for dev selection",
+    "Three-arm fixed decision rule and deterministic tie order tested",
+    "Single GPU batch20 yields 15 complete accumulation groups for 300 examples",
+    "Mock training verifies epoch=0.96 rejection and no parent adapter",
+    "Constant LR endpoints tested; real GPU schedule not yet observed",
+    "git diff --check passed; new/modified text credential-pattern scan passed"
+  ],
+  "unchanged_core_sha256": {
+    "cds_pipeline.py": "c9b1925f9b64d790d63b3463c6d4ffbbe8cd4d43c7ca20d5e7856343a6c731c7",
+    "train_lora.py": "ed5e11c2e97ef3b8d550c65b04cd73bf790d895bc95dd1ea9fd937ef87302682"
+  },
+  "candidate_lrs": [
+    null,
+    1e-05,
+    3e-05
+  ],
+  "automatic_teacher_calls": false,
+  "automatic_test_evaluation": false
+}
