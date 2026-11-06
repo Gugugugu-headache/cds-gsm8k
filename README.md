@@ -8,33 +8,39 @@
 
 ## 当前协议
 
-**当前目标：Qwen/Qwen2.5-3B-Instruct。** 2026-11-06，用户同意先用独立开发集验证初始化方案。具体协议和服务器命令见 [开发集初始化验证.md](开发集初始化验证.md)。现有默认3B配置与已完成Raw/M0 test均保留；Qwen2-7B候选配置与结果也保留，不再把候选选择写成当前正式目标。
+**当前路线：Qwen/Qwen2.5-3B-Instruct，从Raw直接执行CDS。** 用户为后续多模型认知诊断与少数目标提升选择统一Raw起点；完整服务器步骤见 [Raw起点CDS流程.md](Raw起点CDS流程.md)。新入口 `raw_cds.py` 串联独立准备、3500题Raw响应、全局画像、教师细粒度诊断/合成、质量筛选/增强、CDS筛选、从Raw训练及最终比较。
 
 | 项目 | 当前设置 |
 |---|---|
-| 诊断 / 最终测试 | 原 D_diag 3500题 / D_test 1319题，成员不变 |
-| 剩余3973题 | 原300题warmup不变，从旧reserve固定留出500题dev，余3173题 |
-| 开发集候选 | Raw、300题恒定LR=1e-5、300题恒定LR=3e-5 |
-| 新初始化训练 | 单GPU，micro2 / global20 / 累积10，完整1轮、15次更新；其他设置继承3B配置 |
-| 选择规则 | dev正确数优先，平局比较hash覆盖数，再平局优先Raw、1e-5、3e-5 |
-| 学生评测 | chat template、greedy、1024新token、CDS三层数值抽取及容差 |
-| 教师 | 在线Qwen/Qwen2.5-72B-Instruct，当前开发集阶段不调用 |
+| Raw路线配置 / run | `configs/cds_gsm8k_raw.json` / `runs/cds_qwen25_3b_raw_dev500_tok1024` |
+| 诊断 / 最终测试 | 原3500 / 1319题，成员和顺序不变 |
+| 开发集 | 初始化pilot固定的500题，不因取消预微调而重划 |
+| 原300题 | 单独保留为initialization_holdout；Raw路线warmup为空 |
+| reserve | 3173题 |
+| 起点 | Raw；CDS和随机对照分别从同一原始权重新建LoRA |
+| 下游训练 | 沿用原CDS主配置的batch32与WarmupLR；不是初始化pilot的batch20/恒定LR |
+| 评测 | 同一chat数学指令、greedy、1024新token、CDS三层数值抽取及容差 |
+| 教师 | 在线Qwen/Qwen2.5-72B-Instruct；仅显式运行教师阶段时调用 |
 
-服务器已报告：3B Raw 1127/1319（85.44%）；旧M0 1089/1319（82.56%），对→错98题、错→对60题，hash抽取覆盖1028→993。旧M0实际9次更新、epoch=0.96，尚未成为正式共同起点。Qwen2-7B Raw为1137/1319（86.20%）。这些是用户提供的服务器统计，逐题文件保存在服务器。
+已有Raw test（1127/1319，85.44%）由新协议引用和校验，无需重跑。新入口拒绝用M0/子集回答建立Raw诊断；生成训练题排除与diag、dev、test及原300题的规范化文本精确重合，并保留相同题数的随机对照。相同题数不等于相同token或API预算，需额外记录。
 
-新入口 `initialization_pilot.py` 使用独立run并冻结候选与规则；不改旧核心代码/冻结记录，使用可整除300题的batch20避免本次尾批取整问题。**此后正式共同起点由dev协议确定，不预设必须预微调。** 参考模型无需初始化微调。主实验各方法在同一目标内共享确定后的起点及预算，并保留Raw基线，分别报告初始化效果和后续方法效果。
+### 初始化预实验保留
 
-本次属于已观察test后的探索性改进，后续开发集选择不能消除此前test信息影响；论文须如实交代。不用test继续调学习率、轮数、prompt或抽取规则。原论文292题与本项目300题是适配差异，不宣称300或500最优。
+[开发集初始化验证.md](开发集初始化验证.md) 记录原定三组开发集比较：Raw、1e-5、3e-5均468/500，hash覆盖分别413/408/440，因此原规则选择3e-5。所选新M0 test为1126/1319（85.37%），旧高LR M0为1089/1319（82.56%），Qwen2-7B Raw候选为1137/1319（86.20%）。这些统计由用户在服务器运行后提供，本地不持有逐题真实响应。
+
+当前选择Raw是统一实验条件的设计决策，**不能写成开发集选中了Raw**。旧配置、检查点、结果和选择记录均保留。此前已观察test的探索历史也应保留；后续不根据test继续选模型、prompt或阈值。论文应明确标注为“CDS（统一Raw初始化）”适配版本，而非原论文数值的严格复现。
+
+原初始化pilot用global20令300题恰好15次更新；这不是通用Trainer尾批修复。新Raw路线的合成训练数据大小尚未知，旧Trainer可能省略最后不足一个累积组的样本，保存实际epoch，不将其误报为完整遍历所有样本。任何后续训练协议修改应在训练前明确冻结，并同步用于所有对照。
 
 ## 环境与文件
 
-已确认服务器PyTorch2.6.0+cu124可识别GPU，用户已完成训练依赖检查与旧21项测试，nvcc不在PATH。训练安装步骤以 [无nvcc训练环境.md](无nvcc训练环境.md) 为准：核心依赖组合使用requirements-train-torch26.txt，DeepSpeed0.16.7关闭安装期预编译，训练显式选原生Torch AdamW避免FusedAdam JIT。当前1024协议使用新目录重新记录配置，300题成员不变。旧300题GPU训练和M0评测已运行；新的dev方案尚待服务器GPU验证。
+已确认服务器PyTorch2.6.0+cu124可识别GPU，用户已完成训练依赖检查与旧21项测试，nvcc不在PATH。训练安装步骤以 [无nvcc训练环境.md](无nvcc训练环境.md) 为准：核心依赖组合使用requirements-train-torch26.txt，DeepSpeed0.16.7关闭安装期预编译，训练显式选原生Torch AdamW避免FusedAdam JIT。当前1024协议使用新目录重新记录配置，300题成员不变。旧300题GPU训练和M0评测已运行；开发集两组训练及评测已完成，Raw路线的后续CDS训练尚待服务器验证。
 
 服务器首次部署按 [服务器部署.md](服务器部署.md) 执行。上传包中代码目录命名为 `src`；本说明中的 `CDI（CDS复现）/` 命令前缀在服务器应替换为 `src/`。
 
 在项目根目录运行命令。默认服务器模型路径是 `/media/data/gezhenjiang/model_list/Qwen2.5-3B-Instruct`。下载由用户在服务器完成；此项目不自动下载模型。
 
-训练和推理分开虚拟环境：训练环境按上述部署文档使用 `requirements-train-torch26.txt`，推理环境使用 `requirements-infer-torch26.txt`。用户已确认cdi-infer的torch2.6.0+cu124、vLLM0.8.5.post1导入及1024预算的完整Raw test通过；新的开发集训练方案仍需在服务器验证。保存各自 `pip freeze`、CUDA/驱动信息及HF模型revision；候选requirements不是完整锁定环境。
+训练和推理分开虚拟环境：训练环境按上述部署文档使用 `requirements-train-torch26.txt`，推理环境使用 `requirements-infer-torch26.txt`。用户已确认cdi-infer的torch2.6.0+cu124、vLLM0.8.5.post1导入及1024预算的完整Raw test通过；新的Raw路线CDS训练仍需在服务器验证。保存各自 `pip freeze`、CUDA/驱动信息及HF模型revision；候选requirements不是完整锁定环境。
 
 ```bash
 python -m pip install -r CDI（CDS复现）/requirements-cpu.txt
@@ -44,9 +50,9 @@ python CDI（CDS复现）/cds_pipeline.py prepare
 
 运行前编辑 `CDI（CDS复现）/configs/cds_gsm8k.json` 的目标模型路径、模型 revision 注记和 `run_dir`。`prepare` 会校验原始文件及划分清单的 SHA256、题目身份和跨集合规范化题文重叠。冻结配置与关键实现哈希；之后改参数/实现必须使用新的 run_dir，避免混入已有结果。导出文件默认在被 git 忽略的 `runs/cds_qwen25_3b_pre300_torchadam_tok1024`。
 
-## 正式CDS流程参考（初始化验证完成后再衔接）
+## 历史M0路线参考（当前Raw路线请用上方专用入口）
 
-以下是旧默认配置的流程说明，不是当前开发集阶段的执行清单。先完成上方开发集协议并确定起点；选择Raw时需调整正式初始化要求，选择微调时需统一引用所选适配器，不能直接把旧M0当作共同起点。
+以下是旧默认配置的M0流程说明，保留用于解释已有实验；当前Raw路线执行清单在《Raw起点CDS流程.md》。不要把本节的旧warmup路径用于新Raw实验，也不要使用旧prepare重新划分Raw路线的开发集。
 
 原始模型基线已在服务器完成，结果应单独保留；后续无需重跑已有Raw test。首次部署者可按 [原始模型基线评测.md](原始模型基线评测.md) 检查推理环境并采集Raw，然后回训练环境执行下面第1步。Raw、M0、CDS的评测分别保存，test分数不用于调参。
 

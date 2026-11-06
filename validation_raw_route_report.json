@@ -1,0 +1,40 @@
+{
+  "date": "2026-11-06",
+  "scope": "CPU-only local checks; no GPU jobs or teacher API calls executed.",
+  "unittest": {
+    "passed": 50,
+    "failed": 0
+  },
+  "allocation": {
+    "diag": 3500,
+    "test": 1319,
+    "dev": 500,
+    "reserve": 3173,
+    "warmup": 0,
+    "initialization_holdout": 300
+  },
+  "checks": [
+    "Real source data exported in temporary directories",
+    "Raw diag/test/dev/reserve byte-identical to frozen pilot exports",
+    "Old 300 examples preserved as reserved initialization holdout",
+    "Previous configurations and artifacts unchanged",
+    "Data/vocabulary changes detected",
+    "M0/wrong-size/wrong-config diagnosis rejected",
+    "CDS selection excludes exact normalized diagnostic/dev/test/reserved overlap",
+    "Training wrapper starts with no parent adapter; actual epoch is retained",
+    "Checkpoint changes rejected before evaluation",
+    "CLI help and git diff --check passed; credential-pattern scan passed"
+  ],
+  "baseline_test_validation": "Uses fake responses on real test identities in temporary tests; actual historical Raw predictions verified on the server during prepare.",
+  "unchanged_core_sha256": {
+    "cds_pipeline.py": "c9b1925f9b64d790d63b3463c6d4ffbbe8cd4d43c7ca20d5e7856343a6c731c7",
+    "train_lora.py": "ed5e11c2e97ef3b8d550c65b04cd73bf790d895bc95dd1ea9fd937ef87302682",
+    "initialization_pilot.py": "2ad180e48cc7489510979a266736e40a17b3beda349eb916b25ce53775f8120d",
+    "compare.py": "e458aeb2dcc0d5c6fb0eb0d0e43d5c82a41208cbbd4813d9b6885b3bd75be014"
+  },
+  "limitations": [
+    "Downstream training still uses the original CDS WarmupLR and batch32.",
+    "Legacy Trainer may omit a partial final accumulation group.",
+    "GPU training, online teacher responses and end-to-end outcomes remain unverified locally."
+  ]
+}
