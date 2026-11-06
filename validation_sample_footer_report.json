@@ -1,0 +1,30 @@
+{
+  "date": "2026-11-06",
+  "unittest": {
+    "passed": 92,
+    "failed": 0
+  },
+  "scope": "Offline tests using the summary text reported by the user and temporary fake caches; no local real .env or paid API calls.",
+  "user_reported_request": "21c43ace0135850afb41f92f0556a239267c932365ca0a3c793f48a2491278c0",
+  "checks": [
+    "Observed summary excluded while all three parsed questions, answers and sample IDs match no-summary result",
+    "Original parser policy/audit bytes and all cache bytes preserved across the versioned extension",
+    "Missing/empty/misnumbered samples and incomplete answers not rescued by footer handling",
+    "Additional questions, correction instructions and mathematical footer structure rejected",
+    "Length cache rejected even when its three samples appear complete",
+    "Offline preview loads no dotenv, sends no API requests, and writes nothing",
+    "Frozen scripts, retry helpers and original Markdown parser byte-identical",
+    "Whitespace and credential-pattern checks passed"
+  ],
+  "unchanged_scripts_sha256": {
+    "cds_pipeline.py": "c9b1925f9b64d790d63b3463c6d4ffbbe8cd4d43c7ca20d5e7856343a6c731c7",
+    "train_lora.py": "ed5e11c2e97ef3b8d550c65b04cd73bf790d895bc95dd1ea9fd937ef87302682",
+    "initialization_pilot.py": "2ad180e48cc7489510979a266736e40a17b3beda349eb916b25ce53775f8120d",
+    "raw_cds.py": "16e095c18e138a4360f5be51d90a128293fb53fd22b2eb6565140b4dda429585",
+    "raw_cds18.py": "ac5bda038ffae38f198ab0b78806f1f5f1e67bddeb832d3ea289877d00826dbc",
+    "teacher_length_retry.py": "320d8a9ff80b96a16d1a9bc390947504d0ddaff72d8f4414fff091c5d5ab65b1",
+    "teacher_generation_retry.py": "145ae9c2406b768217c975f496b56d5a19dac177602587bd0c838d2b2c195e46",
+    "teacher_sample_format.py": "27c83e2357092bcec7d5acd4429d31c49e2db44d7b949cdb7e8124aa155146fd"
+  },
+  "pending": "Run parse-cache --count 3 against actual server request, then resume synthesize."
+}
