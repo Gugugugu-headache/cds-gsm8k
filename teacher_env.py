@@ -2,11 +2,12 @@
 """Load only teacher settings from a chosen .env and use curl for API calls.
 
 Defaults to the project-root .env. Never prints its values or sources it as shell
-code. Existing frozen CDS files are untouched; generation payload/cache keys stay
-the same. `check` only queries models; synthesis/quality/augmentation are explicit.
+code. Existing nominal payloads/cache keys stay the same; synthesis adds a
+recorded 1024->2048->4096 retry for truncated diagnoses only. `check` only queries
+models; synthesis/quality/augmentation are explicit.
 """
 import argparse
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from datetime import datetime, timezone
 import hashlib
 import io
@@ -113,6 +114,7 @@ def main():
         parser.error('--pool is required for quality and only accepted for quality.')
     import raw_cds18
     import cds_pipeline as cp
+    from teacher_length_retry import diagnosis_length_retry, POLICY_VERSION
     cfg = cp.read(raw_cds18.CONFIG_PATH)
     teacher = cfg['teacher']
     key, base = load_teacher_env(args.env_file, teacher)
@@ -127,13 +129,15 @@ def main():
     event = {'time_utc': datetime.now(timezone.utc).isoformat(), 'command': args.command,
              'pool': args.pool, 'transport': 'curl HTTP/1.1 via stdin config',
              'helper_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-             'config_hash': cp.digest(cfg), 'teacher': teacher['model'], 'base_url': base}
+             'config_hash': cp.digest(cfg), 'teacher': teacher['model'], 'base_url': base,
+             'diagnosis_retry_policy': POLICY_VERSION if args.command == 'synthesize' else None}
     with (run / 'teacher_transport.jsonl').open('a', encoding='utf-8') as file:
         file.write(json.dumps(event) + '\n')
     previous = sys.argv
     try:
         sys.argv = ['raw_cds18.py', args.command] + (['--pool', args.pool] if args.pool else [])
-        with curl_transport(key):
+        retry = diagnosis_length_retry(cfg, run) if args.command == 'synthesize' else nullcontext()
+        with curl_transport(key), retry:
             raw_cds18.main()
     finally:
         sys.argv = previous
