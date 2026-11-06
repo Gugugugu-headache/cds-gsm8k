@@ -1,0 +1,26 @@
+{
+  "date": "2026-11-06",
+  "scope": "Local offline tests only. No real .env read, no live credential validation or teacher calls.",
+  "unittest": {
+    "passed": 61,
+    "failed": 0
+  },
+  "checks": [
+    "Selected teacher file values override stale process variables; unrelated file values not exported",
+    "Shell expressions in temporary dotenv fixture not executed",
+    "Absent/whitespace/non-ASCII credentials and unsafe base URLs rejected without value disclosure",
+    "Curl receives credentials/payload via stdin, not argv",
+    "HTTP error body redacted before stderr output and exception construction",
+    "Production Teacher payload and cache digest unchanged in mocked-transport test; repeat uses cache",
+    "Model-list check sends only GET and no generation request",
+    "Existing frozen scripts byte-identical; diff whitespace and credential-pattern checks passed"
+  ],
+  "unchanged_frozen_scripts": {
+    "cds_pipeline.py": "c9b1925f9b64d790d63b3463c6d4ffbbe8cd4d43c7ca20d5e7856343a6c731c7",
+    "train_lora.py": "ed5e11c2e97ef3b8d550c65b04cd73bf790d895bc95dd1ea9fd937ef87302682",
+    "initialization_pilot.py": "2ad180e48cc7489510979a266736e40a17b3beda349eb916b25ce53775f8120d",
+    "raw_cds.py": "16e095c18e138a4360f5be51d90a128293fb53fd22b2eb6565140b4dda429585",
+    "raw_cds18.py": "ac5bda038ffae38f198ab0b78806f1f5f1e67bddeb832d3ea289877d00826dbc"
+  },
+  "server_next_step": "teacher_env.py check reads the user-selected server .env; HTTP200 and exact model-list presence required before synthesis."
+}
