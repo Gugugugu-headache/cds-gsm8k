@@ -3,8 +3,8 @@
 
 Defaults to the project-root .env. Never prints its values or sources it as shell
 code. Existing nominal payloads/cache keys stay the same; synthesis adds a
-recorded 1024->2048->4096 retry for truncated diagnoses only. `check` only queries
-models; synthesis/quality/augmentation are explicit.
+recorded 1024->2048->4096 diagnosis retry and 4096->8192 generation retry.
+`inspect` is offline; `check` only queries models. Generation stages are explicit.
 """
 import argparse
 from contextlib import contextmanager, nullcontext
@@ -94,7 +94,13 @@ def curl_transport(key):
     original = urllib.request.urlopen
 
     def urlopen(request, timeout=180):
-        return io.BytesIO(curl_request(request, key, timeout).encode('utf-8'))
+        from teacher_generation_retry import LARGE_OUTPUT_TIMEOUT
+        try:
+            limit = json.loads(request.data or b'{}').get('max_tokens', 0)
+        except (ValueError, AttributeError, TypeError):
+            limit = 0
+        effective_timeout = max(timeout, LARGE_OUTPUT_TIMEOUT) if limit >= 8192 else timeout
+        return io.BytesIO(curl_request(request, key, effective_timeout).encode('utf-8'))
 
     urllib.request.urlopen = urlopen
     try:
@@ -103,18 +109,43 @@ def curl_transport(key):
         urllib.request.urlopen = original
 
 
+def inspect_request(key):
+    import raw_cds18
+    import cds_pipeline as cp
+    if not re.fullmatch(r'[0-9a-f]{64}', key or ''):
+        raise ValueError('--request-key must be a 64-character cache hash.')
+    cfg = cp.read(raw_cds18.CONFIG_PATH)
+    path = cp.resolve(cfg['run_dir']) / 'teacher_cache' / (key + '.json')
+    cached = cp.read(path)
+    request = cached['request']
+    if cp.digest({'url': cached['url'], 'payload': request}) != key:
+        raise ValueError('Cache payload does not match the requested hash.')
+    print(json.dumps({'request': key, 'model': request['model'],
+        'max_tokens': request['max_tokens'], 'messages': len(request['messages']),
+        'scoring': 'top_k' in request, 'finish_reason': cached['finish_reason'],
+        'usage': cached.get('usage')}, ensure_ascii=False, indent=2))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--env-file', type=Path,
                         default=Path(__file__).resolve().parents[1] / '.env')
-    parser.add_argument('command', choices=['check', 'synthesize', 'quality', 'augment'])
+    parser.add_argument('command', choices=['inspect', 'check', 'synthesize', 'quality', 'augment'])
     parser.add_argument('--pool', choices=['seed', 'augmented'])
+    parser.add_argument('--request-key')
     args = parser.parse_args()
     if (args.command == 'quality') != (args.pool is not None):
         parser.error('--pool is required for quality and only accepted for quality.')
+    if (args.command == 'inspect') != (args.request_key is not None):
+        parser.error('--request-key is required for inspect and only accepted for inspect.')
+    if args.command == 'inspect':
+        inspect_request(args.request_key)
+        return
     import raw_cds18
     import cds_pipeline as cp
     from teacher_length_retry import diagnosis_length_retry, POLICY_VERSION
+    from teacher_generation_retry import (generation_length_retry, LARGE_OUTPUT_TIMEOUT,
+                                           POLICY_VERSION as GENERATION_POLICY)
     cfg = cp.read(raw_cds18.CONFIG_PATH)
     teacher = cfg['teacher']
     key, base = load_teacher_env(args.env_file, teacher)
@@ -130,14 +161,20 @@ def main():
              'pool': args.pool, 'transport': 'curl HTTP/1.1 via stdin config',
              'helper_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
              'config_hash': cp.digest(cfg), 'teacher': teacher['model'], 'base_url': base,
-             'diagnosis_retry_policy': POLICY_VERSION if args.command == 'synthesize' else None}
+             'diagnosis_retry_policy': POLICY_VERSION if args.command == 'synthesize' else None,
+             'generation_retry_policy': GENERATION_POLICY if args.command in ['synthesize', 'augment'] else None,
+             'curl_timeout_seconds_at_8192': LARGE_OUTPUT_TIMEOUT}
     with (run / 'teacher_transport.jsonl').open('a', encoding='utf-8') as file:
         file.write(json.dumps(event) + '\n')
     previous = sys.argv
     try:
         sys.argv = ['raw_cds18.py', args.command] + (['--pool', args.pool] if args.pool else [])
         retry = diagnosis_length_retry(cfg, run) if args.command == 'synthesize' else nullcontext()
-        with curl_transport(key), retry:
+        generation = (generation_length_retry(cfg, run)
+                      if args.command in ['synthesize', 'augment'] else nullcontext())
+        # Diagnosis captures the original call before the generation wrapper is
+        # installed, so its internal 4096 attempt cannot escalate to 8192.
+        with curl_transport(key), retry, generation:
             raw_cds18.main()
     finally:
         sys.argv = previous
