@@ -131,7 +131,7 @@ def parse_cache(key, count):
     import raw_cds18
     import cds_pipeline as cp
     from teacher_sample_format import validate_cached_text
-    from teacher_sample_footer import parse_compatible
+    from teacher_sample_summary_heading import parse_compatible
     if not re.fullmatch(r'[0-9a-f]{64}', key or ''):
         raise ValueError('--request-key must be a 64-character cache hash.')
     cfg = cp.read(raw_cds18.CONFIG_PATH)
@@ -170,7 +170,7 @@ def main():
     from teacher_length_retry import diagnosis_length_retry, POLICY_VERSION
     from teacher_generation_retry import (generation_length_retry, LARGE_OUTPUT_TIMEOUT,
                                            POLICY_VERSION as GENERATION_POLICY)
-    from teacher_sample_footer import sample_format_compatibility, POLICY_VERSION as PARSER_POLICY
+    from teacher_sample_summary_heading import sample_format_compatibility, POLICY_VERSION as PARSER_POLICY
     cfg = cp.read(raw_cds18.CONFIG_PATH)
     teacher = cfg['teacher']
     key, base = load_teacher_env(args.env_file, teacher)
