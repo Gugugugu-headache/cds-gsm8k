@@ -1,0 +1,86 @@
+### Sample Questions to Reinforce Understanding of Equations
+
+#### Question 1:
+A rectangular garden has a length that is 3 meters more than twice its width. If the perimeter of the garden is 54 meters, what are the dimensions of the garden?
+
+**Answer**:
+>>
+Let's denote the width of the garden as \( w \) meters.
+
+According to the problem:
+- The length of the garden is \( 2w + 3 \) meters.
+- The perimeter of a rectangle is given by the formula \( 2 \times (\text{length} + \text{width}) \).
+
+So, we can write the equation for the perimeter:
+\[ 2 \times (w + (2w + 3)) = 54 \]
+
+Simplify the equation:
+\[ 2 \times (3w + 3) = 54 \]
+\[ 6w + 6 = 54 \]
+
+Subtract 6 from both sides:
+\[ 6w = 48 \]
+
+Divide both sides by 6:
+\[ w = 8 \]
+
+Now, substitute \( w = 8 \) back into the expression for the length:
+\[ \text{length} = 2w + 3 = 2 \times 8 + 3 = 16 + 3 = 19 \]
+
+Therefore, the dimensions of the garden are:
+- Width: 8 meters
+- Length: 19 meters
+<<
+
+#### Question 2:
+A school is organizing a field trip and needs to rent buses. Each bus can hold 45 students. If the school has 180 students and the cost to rent each bus is $250, how much will it cost to rent enough buses to transport all the students?
+
+**Answer**:
+>>
+Let's denote the number of buses needed as \( b \).
+
+According to the problem:
+- Each bus can hold 45 students.
+- The total number of students is 180.
+
+We need to find the number of buses required:
+\[ 45b = 180 \]
+
+Divide both sides by 45:
+\[ b = \frac{180}{45} = 4 \]
+
+So, the school needs to rent 4 buses.
+
+Now, let's calculate the total cost to rent the buses:
+\[ \text{Total cost} = 4 \times 250 = 1000 \]
+
+Therefore, the total cost to rent enough buses to transport all the students is:
+- $1000
+<<
+
+#### Question 3:
+A water tank is being filled at a rate of 5 liters per minute. The tank already contains 30 liters of water. If the tank is full when it contains 120 liters, how long will it take to fill the tank completely?
+
+**Answer**:
+>>
+Let's denote the time it takes to fill the tank completely as \( t \) minutes.
+
+According to the problem:
+- The tank is being filled at a rate of 5 liters per minute.
+- The tank already contains 30 liters of water.
+- The tank is full when it contains 120 liters.
+
+We need to find the amount of water that still needs to be added to fill the tank:
+\[ 120 - 30 = 90 \text{ liters} \]
+
+Now, we can set up the equation for the time required to add 90 liters:
+\[ 5t = 90 \]
+
+Divide both sides by 5:
+\[ t = \frac{90}{5} = 18 \]
+
+Therefore, it will take:
+- 18 minutes to fill the tank completely.
+<<
+
+These questions are designed to reinforce the student's understanding of equations by requiring them to set up and solve equations, and then apply the solutions to find specific answers.
