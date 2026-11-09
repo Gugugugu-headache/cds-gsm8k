@@ -1,0 +1,55 @@
+{
+  "date": "2026-11-09",
+  "unittest": {
+    "passed": 128,
+    "failed": 0,
+    "new_test_methods": 6
+  },
+  "scope": "Offline CPU regression tests with mocked Ollama; no actual server calls, model loading, .env reads, GPU jobs, cache deletion or protocol rewriting.",
+  "reported_failure": {
+    "request": "1a63b8f78eebcbfa9ff2ce3735701d7e464464800283136f76320ef32fdcacaa",
+    "seed": 2103518819,
+    "status": 400,
+    "message": "Field 'repeat_last_n': Value must be between 0 <= value <= 2147483647, but got -1"
+  },
+  "fix": {
+    "entry": "qwen15_cds_ollama_compat.py",
+    "source_repeat_last_n": -1,
+    "effective_repeat_last_n": 32768,
+    "intent": "Explicit positive num_ctx-sized repetition window instead of rejected sentinel.",
+    "frozen_protocol_handling": "Original files retained; effective correction recorded in a separate immutable policy and per-response audits."
+  },
+  "checks": [
+    "Actual first-request canonical hash and seed reproduced from released prompt",
+    "Native request differs only in repeat_last_n",
+    "Server integer-range rejection reproduced by mock validator; positive corrected request accepted",
+    "Corrected cache replay avoids generation and retains cache bytes",
+    "Cache tampering rejected without rewriting prior audits",
+    "Legacy incompatible native caches retained and rejected, not overwritten",
+    "Both complete and length responses receive repeat-scope audits",
+    "Diagnosis and generation bounded retries keep their original limits",
+    "Other HTTP errors expose and retain server response body and actual native options",
+    "Original frozen local run still loads after compatibility execution",
+    "All original allocation, config, response, model and protocol files preserved",
+    "Teacher class, transport and RPC overrides restored on context exit"
+  ],
+  "unchanged_scripts_sha256": {
+    "cds_pipeline.py": "c9b1925f9b64d790d63b3463c6d4ffbbe8cd4d43c7ca20d5e7856343a6c731c7",
+    "train_lora.py": "ed5e11c2e97ef3b8d550c65b04cd73bf790d895bc95dd1ea9fd937ef87302682",
+    "initialization_pilot.py": "2ad180e48cc7489510979a266736e40a17b3beda349eb916b25ce53775f8120d",
+    "raw_cds.py": "16e095c18e138a4360f5be51d90a128293fb53fd22b2eb6565140b4dda429585",
+    "raw_cds18.py": "ac5bda038ffae38f198ab0b78806f1f5f1e67bddeb832d3ea289877d00826dbc",
+    "compare.py": "e458aeb2dcc0d5c6fb0eb0d0e43d5c82a41208cbbd4813d9b6885b3bd75be014",
+    "qwen15_raw_eval.py": "3c6a7c74b62e49848189ccfb7434e0c8248035bae432045fed6d73750f8a5b8f",
+    "ollama_teacher.py": "03711ff8b1020d5f3006b6d629865037cbda51796d586a4b9145532b287fd2ba",
+    "qwen15_cds_ollama.py": "8455acd9add3303f7d73ab3936594f63c25ec11f6173ff53a97d3926b1eaae87",
+    "teacher_env.py": "dc39079f8d158a69165250010d4e2af6c7d710a3b13946c1f72509af802e8c00",
+    "teacher_length_retry.py": "320d8a9ff80b96a16d1a9bc390947504d0ddaff72d8f4414fff091c5d5ab65b1",
+    "teacher_generation_retry.py": "145ae9c2406b768217c975f496b56d5a19dac177602587bd0c838d2b2c195e46",
+    "teacher_sample_format.py": "27c83e2357092bcec7d5acd4429d31c49e2db44d7b949cdb7e8124aa155146fd",
+    "teacher_sample_footer.py": "792d7acc8279d88bf8b637bcae596add1e86427077b8715615d4ff68109ec9ce",
+    "teacher_sample_summary_heading.py": "c6c5c1d2ecc4e8baa34a64cce111dc061e4c5e7eb485c2fb2c14a3f832d3302f",
+    "teacher_sample_descriptive_footer.py": "f693b425c9c4df310901d8750e409fa87fa5ce1a64d6ce2bdf9ce50357810547"
+  },
+  "pending": "Sync the new wrapper and retry synthesize on the lab server; subsequent teacher stages must use the compatibility entry."
+}

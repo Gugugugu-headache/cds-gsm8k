@@ -4,7 +4,7 @@
 
 用户已经报告Qwen1.5-7B-Chat的Raw test为815/1319、Raw diag为2556/3500（944道判错）。本入口复用这些完整回答，不重新推理学生，不把3B合成数据作为Qwen1.5的定向数据。
 
-新入口 `qwen15_cds_ollama.py`，新run为 `runs/cds_qwen15_7b_raw_kc18_ollamaq4_q8_tok1024`，新本机配置为 `src/configs/cds_gsm8k_qwen15_7b_ollama.json`。原3B、Qwen1.5 Raw评测目录及所有既有冻结代码保持原样。
+冻结入口为 `qwen15_cds_ollama.py`，实际操作使用新增兼容入口 `qwen15_cds_ollama_compat.py`（见下文repeat_last_n修复）。run仍为 `runs/cds_qwen15_7b_raw_kc18_ollamaq4_q8_tok1024`，本机配置为 `src/configs/cds_gsm8k_qwen15_7b_ollama.json`。原3B、Qwen1.5 Raw评测目录及所有既有冻结代码保持原样。
 
 ## 教师与参数来源
 
@@ -24,9 +24,9 @@
 ```bash
 cd '/media/data/gezhenjiang/CDI（CDS复现）'
 source /media/data/gezhenjiang/venvs/cdi-infer/bin/activate
-python src/qwen15_cds_ollama.py check
-python src/qwen15_cds_ollama.py prepare
-python src/qwen15_cds_ollama.py profile
+python src/qwen15_cds_ollama_compat.py check
+python src/qwen15_cds_ollama_compat.py prepare
+python src/qwen15_cds_ollama_compat.py profile
 ```
 
 默认服务地址为 `http://127.0.0.1:11434`。若Ollama CLI实际连接其他已安排的服务器，可在check和首次prepare时用 `--base-url http://实际地址:端口`。地址需要为服务根地址，不添加/v1。
@@ -44,7 +44,7 @@ prepare导出带generation_config_hash和reuse_provenance的诊断副本，记�
 ```bash
 mkdir -p runs/cds_qwen15_7b_raw_kc18_ollamaq4_q8_tok1024/logs
 set -o pipefail
-python -u src/qwen15_cds_ollama.py synthesize \
+python -u src/qwen15_cds_ollama_compat.py synthesize \
   2>&1 | tee -a runs/cds_qwen15_7b_raw_kc18_ollamaq4_q8_tok1024/logs/synthesize.log
 ```
 
@@ -53,15 +53,25 @@ python -u src/qwen15_cds_ollama.py synthesize \
 每阶段正常完成后再执行下一条：
 
 ```bash
-python -u src/qwen15_cds_ollama.py quality --pool seed
-python -u src/qwen15_cds_ollama.py augment
-python -u src/qwen15_cds_ollama.py quality --pool augmented
-python src/qwen15_cds_ollama.py select
+python -u src/qwen15_cds_ollama_compat.py quality --pool seed
+python -u src/qwen15_cds_ollama_compat.py augment
+python -u src/qwen15_cds_ollama_compat.py quality --pool augmented
+python src/qwen15_cds_ollama_compat.py select
 ```
+
+## repeat_last_n兼容修复
+
+用户实际服务0.40.8在首个请求 `1a63b8f78eebcbfa9ff2ce3735701d7e464464800283136f76320ef32fdcacaa` 返回HTTP 400，明确拒绝repeat_last_n=-1，要求0至2147483647。该请求的其他参数、完整提示词和seed=2103518819可以在本地准确重建。
+
+新增 `qwen15_cds_ollama_compat.py` 在运行时把repeat_last_n设置为num_ctx的明确正整数32768，保持原来的上下文范围意图。该兼容操作不修改 `ollama_teacher.py`、原入口或已冻结JSON，不需要重新prepare/profile。后续所有教师阶段统一用兼容入口。
+
+原raw_protocol里的-1保留为历史原始配置；`teacher_repeat_scope_policy.json` 单独记录原值、实际值、配置及新旧代码哈希。实际native请求始终写入原响应缓存，另在 `teacher_repeat_scope_requests/` 记录每个完整/length响应的缓存哈希和实际重复窗口。旧的不同native请求缓存会被拒绝，不被覆盖；用户当前首请求即失败，未报告任何成功教师缓存。
+
+兼容层还会把HTTP错误正文打印出来，并在 `teacher_http_errors/` 按内容保存错误与实际请求。提示词、温度/top_p/top_k/min_p、seed、repeat_penalty、上下文和输出上限、质量门槛均保持原样。首个请求的离线回归测试验证只有repeat_last_n字段变化；这不宣称不同推理框架的重复惩罚数值等价。
 
 ## 传输与缓存
 
-使用原生 `/api/chat`、stream=false，显式设置num_ctx=32768、num_predict为请求输出上限、temperature=0.5/top_p=0.8/top_k=0（生成），评分temperature=0/top_p=1/top_k=1、repeat_penalty=1.05/repeat_last_n=-1、min_p=0。seed由实验seed和请求稳定派生。保存实际native_request、完整native_response、token计数和时间信息；不把不同推理引擎的重复惩罚实现称为数值等价。
+使用原生 `/api/chat`、stream=false，显式设置num_ctx=32768、num_predict为请求输出上限、temperature=0.5/top_p=0.8/top_k=0（生成），评分temperature=0/top_p=1/top_k=1、repeat_penalty=1.05、min_p=0。兼容入口实际发送repeat_last_n=32768；原入口保留的-1不能通过用户服务的参数检查。seed由实验seed和请求稳定派生。保存实际native_request、完整native_response、token计数和时间信息；不把不同推理引擎的重复惩罚实现称为数值等价。
 
 原有重试辅助代码仍负责诊断1024→2048→4096、合成4096→8192的length重试；评分512输出token不变。每次尝试分别保留，未正常完成的输出不会作为完整样本接受。已有保守格式解析辅助代码继续使用。
 
@@ -76,19 +86,19 @@ teacher使用keep_alive=5m。教师阶段完成后，可用 `ollama ps` 查看�
 ```bash
 source /media/data/gezhenjiang/venvs/cdi-train/bin/activate
 CUDA_VISIBLE_DEVICES=0 torchrun --standalone --nproc_per_node=1 \
-  src/qwen15_cds_ollama.py train --arm cds
+  src/qwen15_cds_ollama_compat.py train --arm cds
 CUDA_VISIBLE_DEVICES=0 torchrun --standalone --nproc_per_node=1 \
-  src/qwen15_cds_ollama.py train --arm random
+  src/qwen15_cds_ollama_compat.py train --arm random
 ```
 
 保留实际epoch、学习率轨迹和监督token数。两组各从Raw新建LoRA，随机组不加载CDS适配器。训练完成后：
 
 ```bash
 source /media/data/gezhenjiang/venvs/cdi-infer/bin/activate
-CUDA_VISIBLE_DEVICES=0 python src/qwen15_cds_ollama.py infer --split test --arm cds
-python src/qwen15_cds_ollama.py compare --arm cds
-CUDA_VISIBLE_DEVICES=0 python src/qwen15_cds_ollama.py infer --split test --arm random
-python src/qwen15_cds_ollama.py compare --arm random
+CUDA_VISIBLE_DEVICES=0 python src/qwen15_cds_ollama_compat.py infer --split test --arm cds
+python src/qwen15_cds_ollama_compat.py compare --arm cds
+CUDA_VISIBLE_DEVICES=0 python src/qwen15_cds_ollama_compat.py infer --split test --arm random
+python src/qwen15_cds_ollama_compat.py compare --arm random
 ```
 
 这些命令只是完整运行入口；本地验证未运行真实教师、GPU训练或推理。
