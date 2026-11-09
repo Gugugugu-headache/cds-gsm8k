@@ -1,0 +1,96 @@
+# Qwen1.5 Raw + 已部署的Ollama Q4教师
+
+本入口只复现CDS baseline：全局Acc/Freq OR诊断、逐错题教师诊断与合成、改写/融合、质量过滤、CDSscore筛选、Raw起点LoRA训练及固定test评测。没有加入新的诊断策略。
+
+用户已经报告Qwen1.5-7B-Chat的Raw test为815/1319、Raw diag为2556/3500（944道判错）。本入口复用这些完整回答，不重新推理学生，不把3B合成数据作为Qwen1.5的定向数据。
+
+新入口 `qwen15_cds_ollama.py`，新run为 `runs/cds_qwen15_7b_raw_kc18_ollamaq4_q8_tok1024`，新本机配置为 `src/configs/cds_gsm8k_qwen15_7b_ollama.json`。原3B、Qwen1.5 Raw评测目录及所有既有冻结代码保持原样。
+
+## 教师与参数来源
+
+* 使用服务器已经安装的 `qwen2.5:72b`，Q4_K_M、72.7B，用户报告短digest为424bad2cc13f。prepare通过元数据接口获取并冻结完整digest、实际Ollama服务端版本、模板/系统提示/参数/模型信息哈希。与在线API不混用缓存。
+* 学生沿用同一3500诊断、1319测试、500开发、3173 reserve、300初始化保留题及空warmup，18个KC、Raw起点、聊天评测、1024输出token及兼容数值评分器。
+* 全局OR规则保留，准确率0.5/频率0.05为继承的显式适配阈值，不称为恢复了作者未公开的阈值。
+* **本轮质量分数门槛为8，依据论文表9。**原3B运行的10分门槛及结果保留；源码增强脚本的10分做法与论文存在差异。
+* 全局每KC5题、细粒度每错题3题、int(0.5×种子池大小)次增强且每次3题，跟随已发布数学源码。按用户已报告画像为10个全局KC、944错题，初始预计50+2832=2882道题；增强请求数取决于种子质量过滤结果。
+* 使用原数学提示词、原CDSscore代码方向/0.01平滑/max归一化/μ−σ筛选和原下游训练设置。细粒度未解析出1至6个合法KC时，原题标签回退仍在diagnostics/provenance中记录。
+
+这是一份在统一数据划分、Raw起点、18KC及本地量化教师下的CDS方法重实现，不声称数值复刻原论文。
+
+## 元数据检查和准备：不加载模型
+
+在服务器同步代码后：
+
+```bash
+cd '/media/data/gezhenjiang/CDI（CDS复现）'
+source /media/data/gezhenjiang/venvs/cdi-infer/bin/activate
+python src/qwen15_cds_ollama.py check
+python src/qwen15_cds_ollama.py prepare
+python src/qwen15_cds_ollama.py profile
+```
+
+默认服务地址为 `http://127.0.0.1:11434`。若Ollama CLI实际连接其他已安排的服务器，可在check和首次prepare时用 `--base-url http://实际地址:端口`。地址需要为服务根地址，不添加/v1。
+
+check只请求 `/api/version`、`/api/tags`、`/api/show`、`/api/ps`；prepare只查询模型元数据并读写本次运行的配置/数据文件；profile为纯CPU统计。这三条均不调用/api/chat、不预加载72B、不读取.env、不使用在线API密钥、不拉取模型、不更改共享服务。
+
+prepare导出带generation_config_hash和reuse_provenance的诊断副本，记录新CDS配置绑定；逐条回答、原正确性、token数和结束原因保持不变。Raw test作为带文件哈希的外部基线引用，不伪装成新生成结果。
+
+## 可用GPU时段内运行教师阶段
+
+用户2026-11-09 15:11报告两张A6000分别99%/93%利用率，Ollama尚无模型驻留。约63GiB的剩余显存不代表计算卡空闲。教师原生API由已有Ollama服务决定GPU分布；客户端终端的CUDA_VISIBLE_DEVICES不能重新配置该共享服务。本接入不停止其他任务、不重启服务，也不自动卸载共享模型。
+
+元数据检查和准备通过后，在已安排可用GPU时段运行：
+
+```bash
+mkdir -p runs/cds_qwen15_7b_raw_kc18_ollamaq4_q8_tok1024/logs
+set -o pipefail
+python -u src/qwen15_cds_ollama.py synthesize \
+  2>&1 | tee -a runs/cds_qwen15_7b_raw_kc18_ollamaq4_q8_tok1024/logs/synthesize.log
+```
+
+每次新生成请求会先打印请求hash和输出上限，随后显示Fine synthesis i/944。初始全局生成先处理10个KC。原模型未驻留时第一次请求可能包含加载时间；不预先宣称能达到特定吞吐率或一定全GPU加载。
+
+每阶段正常完成后再执行下一条：
+
+```bash
+python -u src/qwen15_cds_ollama.py quality --pool seed
+python -u src/qwen15_cds_ollama.py augment
+python -u src/qwen15_cds_ollama.py quality --pool augmented
+python src/qwen15_cds_ollama.py select
+```
+
+## 传输与缓存
+
+使用原生 `/api/chat`、stream=false，显式设置num_ctx=32768、num_predict为请求输出上限、temperature=0.5/top_p=0.8/top_k=0（生成），评分temperature=0/top_p=1/top_k=1、repeat_penalty=1.05/repeat_last_n=-1、min_p=0。seed由实验seed和请求稳定派生。保存实际native_request、完整native_response、token计数和时间信息；不把不同推理引擎的重复惩罚实现称为数值等价。
+
+原有重试辅助代码仍负责诊断1024→2048→4096、合成4096→8192的length重试；评分512输出token不变。每次尝试分别保留，未正常完成的输出不会作为完整样本接受。已有保守格式解析辅助代码继续使用。
+
+缓存request字段为兼容既有重试/解析审计的规范化CDS请求，url为Ollama服务根地址，native_endpoint明确保存实际/api/chat地址。缓存key按既有规则对url+规范化请求取hash；实际native请求、完整模型digest及配置hash也须匹配才能复用，因此不能跨教师/配置混用。本地不读取代理或云端鉴权环境变量。
+
+teacher使用keep_alive=5m。教师阶段完成后，可用 `ollama ps` 查看驻留情况；学生训练需安排足够可用显存。不要把自动卸载、其他用户服务配置或模型停止操作混入本实验脚本。
+
+## 学生训练和固定评测
+
+数据筛选完成并核对样本量后，使用已验证的训练环境和可用GPU分别运行两组：
+
+```bash
+source /media/data/gezhenjiang/venvs/cdi-train/bin/activate
+CUDA_VISIBLE_DEVICES=0 torchrun --standalone --nproc_per_node=1 \
+  src/qwen15_cds_ollama.py train --arm cds
+CUDA_VISIBLE_DEVICES=0 torchrun --standalone --nproc_per_node=1 \
+  src/qwen15_cds_ollama.py train --arm random
+```
+
+保留实际epoch、学习率轨迹和监督token数。两组各从Raw新建LoRA，随机组不加载CDS适配器。训练完成后：
+
+```bash
+source /media/data/gezhenjiang/venvs/cdi-infer/bin/activate
+CUDA_VISIBLE_DEVICES=0 python src/qwen15_cds_ollama.py infer --split test --arm cds
+python src/qwen15_cds_ollama.py compare --arm cds
+CUDA_VISIBLE_DEVICES=0 python src/qwen15_cds_ollama.py infer --split test --arm random
+python src/qwen15_cds_ollama.py compare --arm random
+```
+
+这些命令只是完整运行入口；本地验证未运行真实教师、GPU训练或推理。
+
+参考：[Ollama原生chat](https://docs.ollama.com/api/chat)、[模型元数据](https://docs.ollama.com/api-reference/show-model-details)、[运行参数](https://docs.ollama.com/modelfile)、[CDS论文](https://aclanthology.org/2025.findings-acl.439.pdf)。

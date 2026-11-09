@@ -8,11 +8,15 @@
 
 ## 当前协议
 
-Qwen1.5-7B-Chat 已下载后的Raw基线评测使用独立 `qwen15_raw_eval.py` 入口，完整命令见 [Qwen1.5原始模型评测.md](Qwen1.5原始模型评测.md)。它直接复用冻结的1319道测试题和原有评分器；本次仅做Raw评测，尚未确定该模型的后续CDS训练协议。
+Qwen1.5已采集的Raw回答可通过 `qwen15_cds_ollama.py` 接入服务器现有的Qwen2.5-72B Q4_K_M教师，复现CDS baseline。独立目录、本轮8分质量门槛及完整命令见 [Ollama教师CDS.md](Ollama教师CDS.md)。check/prepare/profile不加载72B模型；教师生成需安排GPU资源。
 
-**当前路线：Qwen/Qwen2.5-3B-Instruct，从Raw直接执行CDS。** 用户为后续多模型认知诊断与少数目标提升选择统一Raw起点；完整服务器步骤见 [Raw起点CDS流程.md](Raw起点CDS流程.md)。当前统一使用18个主诊断KC，入口为 `raw_cds18.py`；迁移与画像命令见 [18KC迁移与画像.md](18KC迁移与画像.md)。已完成的3500条Raw回答复用，不重新生成。原 `raw_cds.py` 的28维run保留为历史记录，后续合成、训练与评测均使用18维入口。
+Qwen1.5-7B-Chat的独立Raw评测使用 `qwen15_raw_eval.py`，完整命令见 [Qwen1.5原始模型评测.md](Qwen1.5原始模型评测.md)。用户已报告test为815/1319（61.79%）、diag为2556/3500（73.03%），均无抽取失败和截断；完整回答保留在原评测目录。其后续CDS使用上面的Ollama入口，已准备代码但尚待服务器实际运行。
 
-| 项目 | 当前设置 |
+### 3B运行记录（历史）
+
+**Qwen/Qwen2.5-3B-Instruct已从Raw完成CDS试跑。** 用户为后续多模型认知诊断与少数目标提升选择统一Raw起点；完整历史步骤见 [Raw起点CDS流程.md](Raw起点CDS流程.md)。该路线使用18个主诊断KC，入口为 `raw_cds18.py`；迁移与画像命令见 [18KC迁移与画像.md](18KC迁移与画像.md)。原 `raw_cds.py` 的28维run也保留。
+
+| 项目 | 3B运行设置 |
 |---|---|
 | Raw路线配置 / run | `configs/cds_gsm8k_raw_kc18.json` / `runs/cds_qwen25_3b_raw_kc18_dev500_tok1024` |
 | 诊断 / 最终测试 | 原3500 / 1319题，成员和顺序不变 |
@@ -26,6 +30,8 @@ Qwen1.5-7B-Chat 已下载后的Raw基线评测使用独立 `qwen15_raw_eval.py` 
 | 教师 | 在线Qwen/Qwen2.5-72B-Instruct；仅显式运行教师阶段时调用 |
 
 已有Raw test（1127/1319，85.44%）由新协议引用和校验，无需重跑。3500题Raw诊断已报告3203题正确、5条截断；旧28维weak_kcs=20包括低覆盖/零支持，不代表20项实际能力不足。18维画像分别列出低准确率、低覆盖、零支持原因。新入口拒绝用M0/子集回答建立Raw诊断；生成训练题排除与diag、dev、test及原300题的规范化文本精确重合，并保留相同题数的随机对照。相同题数不等于相同token或API预算，需额外记录。
+
+用户已报告该轮CDS组test为1102/1319（83.55%），随机组为1098/1319（83.24%）；均低于Raw。两组各354题、11次优化器更新，实际epoch=0.9943502824858758。这些结果及10分质量门槛的运行完整保留，不因新模型/本地教师接入而替换。本地没有逐题真实生成结果。
 
 教师配置可从服务器项目根目录 `.env` 显式读取，使用 `teacher_env.py check` 检查，再用 `teacher_env.py synthesize` 运行教师阶段。步骤见 [教师env调用.md](教师env调用.md)。仅加载教师变量，以文件值覆盖旧终端值；请求经curl传输，实验配置和缓存语义保留。
 
@@ -47,17 +53,17 @@ Qwen1.5-7B-Chat 已下载后的Raw基线评测使用独立 `qwen15_raw_eval.py` 
 
 当前选择Raw是统一实验条件的设计决策，**不能写成开发集选中了Raw**。旧配置、检查点、结果和选择记录均保留。此前已观察test的探索历史也应保留；后续不根据test继续选模型、prompt或阈值。论文应明确标注为“CDS（统一Raw初始化）”适配版本，而非原论文数值的严格复现。
 
-原初始化pilot用global20令300题恰好15次更新；这不是通用Trainer尾批修复。新Raw路线的合成训练数据大小尚未知，旧Trainer可能省略最后不足一个累积组的样本，保存实际epoch，不将其误报为完整遍历所有样本。任何后续训练协议修改应在训练前明确冻结，并同步用于所有对照。
+原初始化pilot用global20令300题恰好15次更新；这不是通用Trainer尾批修复。3B下游354题已观察到旧Trainer尾批省略；Qwen1.5合成训练数据大小尚未知，同样保存实际epoch，不将其误报为完整遍历所有样本。任何后续训练协议修改应在训练前明确冻结，并同步用于所有对照。
 
 ## 环境与文件
 
-已确认服务器PyTorch2.6.0+cu124可识别GPU，用户已完成训练依赖检查与旧21项测试，nvcc不在PATH。训练安装步骤以 [无nvcc训练环境.md](无nvcc训练环境.md) 为准：核心依赖组合使用requirements-train-torch26.txt，DeepSpeed0.16.7关闭安装期预编译，训练显式选原生Torch AdamW避免FusedAdam JIT。当前1024协议使用新目录重新记录配置，300题成员不变。旧300题GPU训练和M0评测已运行；开发集两组训练及评测已完成，Raw路线的后续CDS训练尚待服务器验证。
+已确认服务器PyTorch2.6.0+cu124可识别GPU，用户已完成训练依赖检查与旧21项测试，nvcc不在PATH。训练安装步骤以 [无nvcc训练环境.md](无nvcc训练环境.md) 为准：核心依赖组合使用requirements-train-torch26.txt，DeepSpeed0.16.7关闭安装期预编译，训练显式选原生Torch AdamW避免FusedAdam JIT。旧300题GPU训练和M0评测、开发集初始化验证、3B Raw路线CDS/随机组训练及评测已完成；Qwen1.5本地教师路线尚待服务器实际验证。
 
 服务器首次部署按 [服务器部署.md](服务器部署.md) 执行。上传包中代码目录命名为 `src`；本说明中的 `CDI（CDS复现）/` 命令前缀在服务器应替换为 `src/`。
 
 在项目根目录运行命令。默认服务器模型路径是 `/media/data/gezhenjiang/model_list/Qwen2.5-3B-Instruct`。下载由用户在服务器完成；此项目不自动下载模型。
 
-训练和推理分开虚拟环境：训练环境按上述部署文档使用 `requirements-train-torch26.txt`，推理环境使用 `requirements-infer-torch26.txt`。用户已确认cdi-infer的torch2.6.0+cu124、vLLM0.8.5.post1导入及1024预算的完整Raw test通过；新的Raw路线CDS训练仍需在服务器验证。保存各自 `pip freeze`、CUDA/驱动信息及HF模型revision；候选requirements不是完整锁定环境。
+训练和推理分开虚拟环境：训练环境按上述部署文档使用 `requirements-train-torch26.txt`，推理环境使用 `requirements-infer-torch26.txt`。用户已确认cdi-infer的torch2.6.0+cu124、vLLM0.8.5.post1导入及1024预算的完整Raw test通过。保存各自 `pip freeze`、CUDA/驱动信息及HF模型revision；候选requirements不是完整锁定环境。
 
 ```bash
 python -m pip install -r CDI（CDS复现）/requirements-cpu.txt
