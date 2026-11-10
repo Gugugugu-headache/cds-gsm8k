@@ -1,0 +1,126 @@
+### Sample Questions
+
+**Question 1:**
+Georgia is working on a science project that requires her to measure the growth of plants over several weeks. She records the height of a plant every week. In the first week, the plant grows 3 cm. In the second week, it grows twice as much as the first week. In the third week, it grows 5 cm less than the second week. What is the total height of the plant after three weeks?
+
+**Answer**:
+>>
+1. **First Week Growth:**
+   \[
+   \text{Height in the first week} = 3 \text{ cm}
+   \]
+
+2. **Second Week Growth:**
+   \[
+   \text{Height in the second week} = 2 \times 3 \text{ cm} = 6 \text{ cm}
+   \]
+
+3. **Third Week Growth:**
+   \[
+   \text{Height in the third week} = 6 \text{ cm} - 5 \text{ cm} = 1 \text{ cm}
+   \]
+
+4. **Total Height After Three Weeks:**
+   \[
+   \text{Total height} = 3 \text{ cm} + 6 \text{ cm} + 1 \text{ cm} = 10 \text{ cm}
+   \]
+
+The total height of the plant after three weeks is 10 cm.
+<<
+
+---
+
+**Question 2:**
+A bakery sells cupcakes in packs. Each pack contains 12 cupcakes. During a special sale, the bakery offers a discount where customers can buy 3 packs for the price of 2. If a customer buys 5 packs during the sale, how many cupcakes do they get, and what is the equivalent cost if each pack normally costs $8?
+
+**Answer**:
+>>
+1. **Number of Packs Bought:**
+   \[
+   \text{Customer buys 5 packs}
+   \]
+
+2. **Discounted Packs:**
+   \[
+   \text{For every 3 packs, the customer pays for 2 packs}
+   \]
+   \[
+   \text{Number of discounted sets} = \left\lfloor \frac{5}{3} \right\rfloor = 1 \text{ set}
+   \]
+   \[
+   \text{Packs paid for in discounted sets} = 1 \times 2 = 2 \text{ packs}
+   \]
+   \[
+   \text{Remaining packs} = 5 - 3 = 2 \text{ packs}
+   \]
+
+3. **Total Packs Paid For:**
+   \[
+   \text{Total packs paid for} = 2 + 2 = 4 \text{ packs}
+   \]
+
+4. **Total Cost:**
+   \[
+   \text{Cost per pack} = \$8
+   \]
+   \[
+   \text{Total cost} = 4 \text{ packs} \times \$8/\text{pack} = \$32
+   \]
+
+5. **Total Number of Cupcakes:**
+   \[
+   \text{Cupcakes per pack} = 12
+   \]
+   \[
+   \text{Total cupcakes} = 5 \text{ packs} \times 12 \text{ cupcakes/pack} = 60 \text{ cupcakes}
+   \]
+
+The customer gets 60 cupcakes and the equivalent cost is $32.
+<<
+
+---
+
+**Question 3:**
+A rectangular garden has a length that is 3 times its width. If the perimeter of the garden is 64 meters, what are the dimensions of the garden, and what is its area?
+
+**Answer**:
+>>
+1. **Define Variables:**
+   \[
+   \text{Let } w \text{ be the width of the garden}
+   \]
+   \[
+   \text{Length of the garden} = 3w
+   \]
+
+2. **Perimeter Formula:**
+   \[
+   \text{Perimeter} = 2 \times (\text{length} + \text{width})
+   \]
+   \[
+   64 \text{ meters} = 2 \times (3w + w)
+   \]
+   \[
+   64 \text{ meters} = 2 \times 4w
+   \]
+   \[
+   64 \text{ meters} = 8w
+   \]
+
+3. **Solve for Width:**
+   \[
+   w = \frac{64 \text{ meters}}{8} = 8 \text{ meters}
+   \]
+
+4. **Solve for Length:**
+   \[
+   \text{Length} = 3w = 3 \times 8 \text{ meters} = 24 \text{ meters}
+   \]
+
+5. **Area of the Garden:**
+   \[
+   \text{Area} = \text{length} \times \text{width} = 24 \text{ meters} \times 8 \text{ meters} = 192 \text{ square meters}
+   \]
+
+The dimensions of the garden are 8 meters in width and 24 meters in length, and the area of the garden is 192 square meters.
+<<

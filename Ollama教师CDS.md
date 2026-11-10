@@ -4,7 +4,7 @@
 
 用户已经报告Qwen1.5-7B-Chat的Raw test为815/1319、Raw diag为2556/3500（944道判错）。本入口复用这些完整回答，不重新推理学生，不把3B合成数据作为Qwen1.5的定向数据。
 
-冻结入口为 `qwen15_cds_ollama.py`，实际操作使用新增兼容入口 `qwen15_cds_ollama_compat.py`（见下文repeat_last_n修复）。run仍为 `runs/cds_qwen15_7b_raw_kc18_ollamaq4_q8_tok1024`，本机配置为 `src/configs/cds_gsm8k_qwen15_7b_ollama.json`。原3B、Qwen1.5 Raw评测目录及所有既有冻结代码保持原样。
+冻结入口为 `qwen15_cds_ollama.py`，实际操作使用新增入口 `qwen15_cds_ollama_samples.py`，同时接入既有repeat_last_n修复和下述标题格式兼容。run仍为 `runs/cds_qwen15_7b_raw_kc18_ollamaq4_q8_tok1024`，本机配置为 `src/configs/cds_gsm8k_qwen15_7b_ollama.json`。原3B、Qwen1.5 Raw评测目录及所有既有冻结代码保持原样。
 
 ## 教师与参数来源
 
@@ -24,9 +24,9 @@
 ```bash
 cd '/media/data/gezhenjiang/CDI（CDS复现）'
 source /media/data/gezhenjiang/venvs/cdi-infer/bin/activate
-python src/qwen15_cds_ollama_compat.py check
-python src/qwen15_cds_ollama_compat.py prepare
-python src/qwen15_cds_ollama_compat.py profile
+python src/qwen15_cds_ollama_samples.py check
+python src/qwen15_cds_ollama_samples.py prepare
+python src/qwen15_cds_ollama_samples.py profile
 ```
 
 默认服务地址为 `http://127.0.0.1:11434`。若Ollama CLI实际连接其他已安排的服务器，可在check和首次prepare时用 `--base-url http://实际地址:端口`。地址需要为服务根地址，不添加/v1。
@@ -44,7 +44,7 @@ prepare导出带generation_config_hash和reuse_provenance的诊断副本，记�
 ```bash
 mkdir -p runs/cds_qwen15_7b_raw_kc18_ollamaq4_q8_tok1024/logs
 set -o pipefail
-python -u src/qwen15_cds_ollama_compat.py synthesize \
+python -u src/qwen15_cds_ollama_samples.py synthesize \
   2>&1 | tee -a runs/cds_qwen15_7b_raw_kc18_ollamaq4_q8_tok1024/logs/synthesize.log
 ```
 
@@ -53,11 +53,31 @@ python -u src/qwen15_cds_ollama_compat.py synthesize \
 每阶段正常完成后再执行下一条：
 
 ```bash
-python -u src/qwen15_cds_ollama_compat.py quality --pool seed
-python -u src/qwen15_cds_ollama_compat.py augment
-python -u src/qwen15_cds_ollama_compat.py quality --pool augmented
-python src/qwen15_cds_ollama_compat.py select
+python -u src/qwen15_cds_ollama_samples.py quality --pool seed
+python -u src/qwen15_cds_ollama_samples.py augment
+python -u src/qwen15_cds_ollama_samples.py quality --pool augmented
+python src/qwen15_cds_ollama_samples.py select
 ```
+
+## 第453道错题的标题格式兼容
+
+2026-11-10用户提供请求 `db02b7d9a0bc0712194b6c92b67c5835a72444c904093ec7e1697b4810a2b0bc` 的完整缓存回答：finish_reason=stop，输出1119/4096 token，3道题均有完整答案。暂停原因是标题写成 `**Question 1:**`（冒号在粗体内）且样本之间有独立的 `---`，旧解析器未支持该组合。
+
+新增 `teacher_sample_bold_colon.py` 与入口 `qwen15_cds_ollama_samples.py`。先尝试已有解析链，仅在无法识别所需编号时启用新兼容：将标题转换为已有严格解析器接受的视图，只移除前一非空行为完整答案结束符、后一非空行为下一题标题的独立分隔线。题干和答案保持原样，原缓存不修改；仍要求编号恰为1至N、每题一个非空完整答案、无额外题目或无法识别的尾文。分隔线或类似标题若位于答案内则保留。
+
+已冻结的原入口、repeat修复及旧解析辅助代码不修改；新增独立的 `teacher_sample_bold_colon_policy.json` 和 `teacher_sample_bold_colon_parsing/` 审计记录。后者记录响应/缓存/规范视图哈希、行号变动、样本ID及provenance哈希。
+
+同步后可先离线检查这条服务器缓存，不调用教师、不写实验文件：
+
+```bash
+python src/qwen15_cds_ollama_samples.py parse-cache \
+  --request-key db02b7d9a0bc0712194b6c92b67c5835a72444c904093ec7e1697b4810a2b0bc \
+  --count 3
+```
+
+预期parsed_count=3、parser=bold_question_inner_colon_v1、preview_only=true。随后重新执行上面的synthesize命令，不需要重新prepare/profile或删除缓存。程序会重放进度并复用此前成功请求；这条已有的第453题回答也可直接解析，无需再次生成。整阶段完成后才写出synthesis.json和diagnostics.json。
+
+针对用户原文及边界条件新增9项离线测试，全套137项通过。解析成功只确认格式和完整性；题意歧义、数学正确性、多问答案仍交给后续质量环节，解析器不替教师改题。
 
 ## repeat_last_n兼容修复
 
@@ -86,19 +106,19 @@ teacher使用keep_alive=5m。教师阶段完成后，可用 `ollama ps` 查看�
 ```bash
 source /media/data/gezhenjiang/venvs/cdi-train/bin/activate
 CUDA_VISIBLE_DEVICES=0 torchrun --standalone --nproc_per_node=1 \
-  src/qwen15_cds_ollama_compat.py train --arm cds
+  src/qwen15_cds_ollama_samples.py train --arm cds
 CUDA_VISIBLE_DEVICES=0 torchrun --standalone --nproc_per_node=1 \
-  src/qwen15_cds_ollama_compat.py train --arm random
+  src/qwen15_cds_ollama_samples.py train --arm random
 ```
 
 保留实际epoch、学习率轨迹和监督token数。两组各从Raw新建LoRA，随机组不加载CDS适配器。训练完成后：
 
 ```bash
 source /media/data/gezhenjiang/venvs/cdi-infer/bin/activate
-CUDA_VISIBLE_DEVICES=0 python src/qwen15_cds_ollama_compat.py infer --split test --arm cds
-python src/qwen15_cds_ollama_compat.py compare --arm cds
-CUDA_VISIBLE_DEVICES=0 python src/qwen15_cds_ollama_compat.py infer --split test --arm random
-python src/qwen15_cds_ollama_compat.py compare --arm random
+CUDA_VISIBLE_DEVICES=0 python src/qwen15_cds_ollama_samples.py infer --split test --arm cds
+python src/qwen15_cds_ollama_samples.py compare --arm cds
+CUDA_VISIBLE_DEVICES=0 python src/qwen15_cds_ollama_samples.py infer --split test --arm random
+python src/qwen15_cds_ollama_samples.py compare --arm random
 ```
 
 这些命令只是完整运行入口；本地验证未运行真实教师、GPU训练或推理。
