@@ -1,0 +1,74 @@
+### Sample Questions Focusing on Probability
+
+#### Question 1
+A bag contains 5 red marbles, 3 blue marbles, and 2 green marbles. If you randomly draw one marble from the bag, what is the probability that it is either red or green?
+
+**Answer**:
+>>
+To find the probability that the marble drawn is either red or green, we need to follow these steps:
+
+1. **Determine the total number of marbles**:
+   - Total marbles = 5 (red) + 3 (blue) + 2 (green) = 10 marbles
+
+2. **Determine the number of favorable outcomes**:
+   - Favorable outcomes (red or green) = 5 (red) + 2 (green) = 7 marbles
+
+3. **Calculate the probability**:
+   - Probability (red or green) = \(\frac{\text{Number of favorable outcomes}}{\text{Total number of outcomes}}\)
+   - Probability (red or green) = \(\frac{7}{10}\)
+
+Therefore, the probability that the marble drawn is either red or green is \(\frac{7}{10}\).
+<<
+
+#### Question 2
+A spinner is divided into 8 equal sections, numbered 1 through 8. If the spinner is spun once, what is the probability that it lands on an even number or a multiple of 3?
+
+**Answer**:
+>>
+To find the probability that the spinner lands on an even number or a multiple of 3, we need to follow these steps:
+
+1. **Identify the total number of possible outcomes**:
+   - Total outcomes = 8 (since the spinner has 8 sections)
+
+2. **Identify the favorable outcomes**:
+   - Even numbers: 2, 4, 6, 8 (4 outcomes)
+   - Multiples of 3: 3, 6 (2 outcomes)
+   - Note that 6 is counted twice (it is both even and a multiple of 3), so we need to avoid double-counting.
+
+3. **Calculate the number of unique favorable outcomes**:
+   - Unique favorable outcomes = (Even numbers) + (Multiples of 3) - (Numbers that are both even and multiples of 3)
+   - Unique favorable outcomes = 4 + 2 - 1 = 5
+
+4. **Calculate the probability**:
+   - Probability (even or multiple of 3) = \(\frac{\text{Number of unique favorable outcomes}}{\text{Total number of outcomes}}\)
+   - Probability (even or multiple of 3) = \(\frac{5}{8}\)
+
+Therefore, the probability that the spinner lands on an even number or a multiple of 3 is \(\frac{5}{8}\).
+<<
+
+#### Question 3
+A deck of 52 playing cards contains 4 suits (hearts, diamonds, clubs, spades) with 13 cards in each suit. If you draw one card from the deck, what is the probability that the card is either a heart or a face card (Jack, Queen, King)?
+
+**Answer**:
+>>
+To find the probability that the card drawn is either a heart or a face card, we need to follow these steps:
+
+1. **Identify the total number of possible outcomes**:
+   - Total outcomes = 52 (since there are 52 cards in the deck)
+
+2. **Identify the favorable outcomes**:
+   - Hearts: 13 cards (one for each rank)
+   - Face cards: Jacks, Queens, Kings (3 per suit, 4 suits) = 3 × 4 = 12 cards
+   - Note that the face cards in hearts (Jack of hearts, Queen of hearts, King of hearts) are counted twice, so we need to avoid double-counting.
+
+3. **Calculate the number of unique favorable outcomes**:
+   - Unique favorable outcomes = (Hearts) + (Face cards) - (Face cards in hearts)
+   - Unique favorable outcomes = 13 + 12 - 3 = 22
+
+4. **Calculate the probability**:
+   - Probability (heart or face card) = \(\frac{\text{Number of unique favorable outcomes}}{\text{Total number of outcomes}}\)
+   - Probability (heart or face card) = \(\frac{22}{52}\)
+   - Simplify the fraction: \(\frac{22}{52} = \frac{11}{26}\)
+
+Therefore, the probability that the card drawn is either a heart or a face card is \(\frac{11}{26}\).
+<<

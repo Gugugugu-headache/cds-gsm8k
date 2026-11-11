@@ -11,7 +11,7 @@ import qwen15_cds_ollama as job
 import qwen15_cds_ollama_compat as repeat_fix
 import teacher_sample_descriptive_footer as previous
 import teacher_sample_format as headings
-import teacher_sample_bold_colon as formatting
+import teacher_sample_optional_colon as formatting
 
 
 @contextmanager

@@ -79,6 +79,26 @@ python src/qwen15_cds_ollama_samples.py parse-cache \
 
 针对用户原文及边界条件新增9项离线测试，全套137项通过。解析成功只确认格式和完整性；题意歧义、数学正确性、多问答案仍交给后续质量环节，解析器不替教师改题。
 
+## 第517道错题：无冒号Markdown标题兼容
+
+2026-11-11用户报告前516道错题完成后，请求 `ee49e6ef26489ba678f7512b078246aedc62ac895396d606399b61c9d7be68e1` 暂停。该回答正常stop，输出982/4096 token，含3道完整概率题；标题为独立一行的 `#### Question 1`、`#### Question 2`、`#### Question 3`，均没有冒号。
+
+新增 `teacher_sample_optional_colon.py`；继续使用同一个 `qwen15_cds_ollama_samples.py` 入口，只更新其解析模块引用。所有既有解析辅助代码保持原字节和哈希，以便重放旧缓存及其解析策略记录。新增策略文件为 `teacher_sample_optional_colon_policy.json`，审计目录为 `teacher_sample_optional_colon_parsing/`。
+
+新兼容只识别答案块外、独立成行、无尾随题文的Markdown编号标题。仅在原解析链未识别出所需编号时补充标题冒号，并继续使用既有严格完整性校验；不补题、不重编号、不重写题干或答案。题数、编号顺序、非空答案、边界和尾文规则保留。标题或分隔线若位于答案中则不改动。
+
+同步后先在服务器离线预览：
+
+```bash
+python src/qwen15_cds_ollama_samples.py parse-cache \
+  --request-key ee49e6ef26489ba678f7512b078246aedc62ac895396d606399b61c9d7be68e1 \
+  --count 3
+```
+
+预期parsed_count=3、parser=markdown_question_missing_colon_v1、preview_only=true。预览不调用教师、不写实验文件。随后按上文原命令恢复synthesize；无需重新prepare/profile、清除缓存或重新生成这条回答。前516道及第517道已有响应继续复用。
+
+本次新增9项离线测试，全套146项通过，包括用户74行完整回答的逐题逐答案核对、旧格式兼容、缓存和旧策略原字节保留、拒绝缺题及不完整答案、离线预览与冻结流程加载。解析包装标题与训练答案正文分离；答案正文仍保留教师原文，未自动补成 `#### 数值`，格式兼容不等于数学质量验证。
+
 ## repeat_last_n兼容修复
 
 用户实际服务0.40.8在首个请求 `1a63b8f78eebcbfa9ff2ce3735701d7e464464800283136f76320ef32fdcacaa` 返回HTTP 400，明确拒绝repeat_last_n=-1，要求0至2147483647。该请求的其他参数、完整提示词和seed=2103518819可以在本地准确重建。
