@@ -10,6 +10,8 @@
 
 Qwen1.5已采集的Raw回答通过 `qwen15_cds_ollama_samples.py` 接入服务器现有的Qwen2.5-72B Q4_K_M教师，复现CDS baseline。该入口保留repeat_last_n=32768兼容修复，并支持缓存中 `**Question 1:**`、无冒号的 `#### Question 1` 标题和完整样本之间的分隔线；原冻结代码与JSON不改。独立目录、本轮8分质量门槛及完整命令见 [Ollama教师CDS.md](Ollama教师CDS.md)。check/prepare/profile不加载72B模型；教师生成需安排GPU资源。
 
+2026-11-13用户决定仅保留10分种子和增强题；使用独立 `qwen15_cds_quality10.py` 入口及Q10目录。精确清理中断的两条旧增强请求、离线复用2882题原评分和后续命令见 [质量10分切换.md](质量10分切换.md)。原Q8配置保留，禁止直接覆盖冻结阈值。
+
 Qwen1.5-7B-Chat的独立Raw评测使用 `qwen15_raw_eval.py`，完整命令见 [Qwen1.5原始模型评测.md](Qwen1.5原始模型评测.md)。用户已报告test为815/1319（61.79%）、diag为2556/3500（73.03%），均无抽取失败和截断；完整回答保留在原评测目录。其后续CDS使用上面的Ollama入口，已准备代码但尚待服务器实际运行。
 
 ### 3B运行记录（历史）
