@@ -11,7 +11,7 @@ import qwen15_cds_ollama as job
 import qwen15_cds_ollama_compat as repeat_fix
 import teacher_sample_descriptive_footer as previous
 import teacher_sample_format as headings
-import teacher_sample_optional_colon as formatting
+import teacher_sample_difficulty_heading as formatting
 
 
 @contextmanager
@@ -24,11 +24,13 @@ def activate_parser():
         previous.sample_format_compatibility = original
 
 
-def preview(key, count):
+def preview(key, count, run_dir=None):
     if not re.fullmatch(r'[0-9a-f]{64}', key or '') or count <= 0:
         raise ValueError('Use a 64-character request hash and positive count.')
-    cfg = cp.read(job.CONFIG_PATH)
+    cfg = cp.read(job.CONFIG_PATH if run_dir is None else cp.resolve(run_dir) / 'config.frozen.json')
     run = cp.resolve(cfg['run_dir'])
+    if run_dir is not None and run != cp.resolve(run_dir):
+        raise ValueError('Preview directory differs from its frozen run_dir.')
     cached = cp.read(run / 'teacher_cache' / (key + '.json'))
     headings.validate_cached_text(run, key, cached['content'])
     rows, mode = formatting.parse_compatible(cached['content'], count, [],
@@ -44,8 +46,9 @@ def main():
         parser.add_argument('command', choices=['parse-cache'])
         parser.add_argument('--request-key', required=True)
         parser.add_argument('--count', type=int, required=True)
+        parser.add_argument('--run', help='Explicit run directory for offline preview, including Q10 caches.')
         args = parser.parse_args()
-        preview(args.request_key, args.count)
+        preview(args.request_key, args.count, run_dir=args.run)
     elif sys.argv[1:2] in [['synthesize'], ['augment']]:
         with activate_parser():
             repeat_fix.main()
