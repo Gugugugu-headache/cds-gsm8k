@@ -1,0 +1,191 @@
+**Question 1: Advanced Financial Planning**
+A family is planning to buy a house worth $350,000. They have a down payment of $70,000 and plan to take out a mortgage for the remaining amount. The bank offers a 3% annual interest rate, compounded monthly, over a 30-year period. Additionally, they will have to pay a one-time origination fee of 1% of the mortgage amount. Calculate the total amount the family will pay over the 30 years, including the down payment, origination fee, and the total interest paid on the mortgage.
+
+**Answer**:
+>>
+1. Calculate the mortgage amount:
+   \[
+   \text{Mortgage amount} = \text{House price} - \text{Down payment}
+   \]
+   \[
+   \text{Mortgage amount} = \$350,000 - \$70,000 = \$280,000
+   \]
+
+2. Calculate the origination fee:
+   \[
+   \text{Origination fee} = \text{Mortgage amount} \times \text{Origination fee percentage}
+   \]
+   \[
+   \text{Origination fee} = \$280,000 \times 0.01 = \$2,800
+   \]
+
+3. Calculate the monthly interest rate:
+   \[
+   \text{Monthly interest rate} = \frac{\text{Annual interest rate}}{12}
+   \]
+   \[
+   \text{Monthly interest rate} = \frac{0.03}{12} = 0.0025
+   \]
+
+4. Calculate the number of payments (months):
+   \[
+   \text{Number of payments} = \text{Loan term in years} \times 12
+   \]
+   \[
+   \text{Number of payments} = 30 \times 12 = 360
+   \]
+
+5. Use the mortgage payment formula to find the monthly payment:
+   \[
+   M = P \times \frac{r(1+r)^n}{(1+r)^n-1}
+   \]
+   where \( M \) is the monthly payment, \( P \) is the principal (mortgage amount), \( r \) is the monthly interest rate, and \( n \) is the number of payments.
+   \[
+   M = 280,000 \times \frac{0.0025(1+0.0025)^{360}}{(1+0.0025)^{360}-1}
+   \]
+   \[
+   M \approx 280,000 \times 0.004216 = 1180.48
+   \]
+
+6. Calculate the total amount paid over the 30 years:
+   \[
+   \text{Total amount paid} = \text{Monthly payment} \times \text{Number of payments}
+   \]
+   \[
+   \text{Total amount paid} = 1180.48 \times 360 = 424,972.80
+   \]
+
+7. Calculate the total interest paid:
+   \[
+   \text{Total interest paid} = \text{Total amount paid} - \text{Mortgage amount}
+   \]
+   \[
+   \text{Total interest paid} = 424,972.80 - 280,000 = 144,972.80
+   \]
+
+8. Calculate the total amount the family will pay:
+   \[
+   \text{Total amount} = \text{Down payment} + \text{Origination fee} + \text{Total amount paid}
+   \]
+   \[
+   \text{Total amount} = 70,000 + 2,800 + 424,972.80 = 497,772.80
+   \]
+
+So, the total amount the family will pay over the 30 years is $497,772.80.
+<<
+
+---
+
+**Question 2: Investment and Tax Calculations**
+An investor buys shares of a stock at $50 per share and sells them after 2 years at $70 per share. During this period, the stock pays dividends of $2 per share each year. The investor also has to pay a 15% capital gains tax on the profit from the sale of the stock and a 10% tax on the dividends received. If the investor bought 100 shares, calculate the net profit after taxes.
+
+**Answer**:
+>>
+1. Calculate the total purchase cost:
+   \[
+   \text{Total purchase cost} = \text{Number of shares} \times \text{Purchase price per share}
+   \]
+   \[
+   \text{Total purchase cost} = 100 \times 50 = 5000
+   \]
+
+2. Calculate the total selling price:
+   \[
+   \text{Total selling price} = \text{Number of shares} \times \text{Selling price per share}
+   \]
+   \[
+   \text{Total selling price} = 100 \times 70 = 7000
+   \]
+
+3. Calculate the capital gain:
+   \[
+   \text{Capital gain} = \text{Total selling price} - \text{Total purchase cost}
+   \]
+   \[
+   \text{Capital gain} = 7000 - 5000 = 2000
+   \]
+
+4. Calculate the capital gains tax:
+   \[
+   \text{Capital gains tax} = \text{Capital gain} \times \text{Capital gains tax rate}
+   \]
+   \[
+   \text{Capital gains tax} = 2000 \times 0.15 = 300
+   \]
+
+5. Calculate the total dividends received:
+   \[
+   \text{Total dividends received} = \text{Number of shares} \times \text{Dividends per share per year} \times \text{Number of years}
+   \]
+   \[
+   \text{Total dividends received} = 100 \times 2 \times 2 = 400
+   \]
+
+6. Calculate the dividend tax:
+   \[
+   \text{Dividend tax} = \text{Total dividends received} \times \text{Dividend tax rate}
+   \]
+   \[
+   \text{Dividend tax} = 400 \times 0.10 = 40
+   \]
+
+7. Calculate the net profit after taxes:
+   \[
+   \text{Net profit} = \text{Total selling price} + \text{Total dividends received} - \text{Total purchase cost} - \text{Capital gains tax} - \text{Dividend tax}
+   \]
+   \[
+   \text{Net profit} = 7000 + 400 - 5000 - 300 - 40 = 2060
+   \]
+
+So, the net profit after taxes is $2060.
+<<
+
+---
+
+**Question 3: Combined Cost and Profit Analysis**
+A small business owner buys a piece of equipment for $12,000 and expects it to last for 5 years. The equipment depreciates linearly over its useful life. The business generates a revenue of $3,000 per month from using the equipment, but incurs a monthly operating cost of $1,500. After 5 years, the business can sell the equipment for a salvage value of $2,000. Calculate the total profit or loss from the equipment over the 5 years, considering the initial cost, depreciation, revenue, operating costs, and salvage value.
+
+**Answer**:
+>>
+1. Calculate the annual depreciation:
+   \[
+   \text{Annual depreciation} = \frac{\text{Initial cost} - \text{Salvage value}}{\text{Useful life}}
+   \]
+   \[
+   \text{Annual depreciation} = \frac{12000 - 2000}{5} = 2000
+   \]
+
+2. Calculate the total depreciation over 5 years:
+   \[
+   \text{Total depreciation} = \text{Annual depreciation} \times \text{Useful life}
+   \]
+   \[
+   \text{Total depreciation} = 2000 \times 5 = 10000
+   \]
+
+3. Calculate the total revenue generated over 5 years:
+   \[
+   \text{Total revenue} = \text{Monthly revenue} \times \text{Number of months}
+   \]
+   \[
+   \text{Total revenue} = 3000 \times 12 \times 5 = 180000
+   \]
+
+4. Calculate the total operating costs over 5 years:
+   \[
+   \text{Total operating costs} = \text{Monthly operating cost} \times \text{Number of months}
+   \]
+   \[
+   \text{Total operating costs} = 1500 \times 12 \times 5 = 90000
+   \]
+
+5. Calculate the total profit or loss:
+   \[
+   \text{Total profit or loss} = \text{Total revenue} - \text{Total operating costs} - \text{Initial cost} + \text{Salvage value}
+   \]
+   \[
+   \text{Total profit or loss} = 180000 - 90000 - 12000 + 2000 = 70000
+   \]
+
+So, the total profit from the equipment over the 5 years is $70,000.
+<<
